@@ -19,7 +19,7 @@ class WidgetGallery(QDialog):
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.topLeftGroupBox, 1, 0)
         mainLayout.addWidget(self.topRightGroupBox, 1, 1)
-        mainLayout.addWidget(self.bottomRightGroupBox, 2, 0)
+        mainLayout.addWidget(self.bottomRightGroupBox, 2, 0, 2, 0)
         mainLayout.setRowStretch(1, 1)
         mainLayout.setRowStretch(2, 1)
         mainLayout.setColumnStretch(0, 1)
