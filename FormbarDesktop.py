@@ -20,10 +20,7 @@ class FormbarApp(QDialog):
     takeBreakSignal = pyqtSignal()
     voteSelectedSignal = pyqtSignal(str)
 
-    def __init__(self, parent=None): 
-        voteHeaders = ["Votes", "Responses", "Color"]
-        voteRows = [("test", "2", "2"),("test", "2", "2"),("test", "2", "2")]
-
+    def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
 
         #? Themes
@@ -88,7 +85,7 @@ class FormbarApp(QDialog):
         votesGroup = QGroupBox("Votes")
 
 
-        model = TableModel(None, ["Votes", "Responses", "Color"], [("test", "2", "2"),("test", "2", "2"),("test", "2", "2")])
+        model = TableModel(None, ["Votes", "Responses", "Color"], [])
         voteView = QTableView()
         voteView.setModel(model)
         voteView.setSelectionMode(voteView.SelectionMode.NoSelection)
@@ -371,9 +368,13 @@ class WorkerObject(QObject):
 
             @self.sio.event
             def setClass(newClassId):
-                if debug: 
-                    print('The user is currently in the class with the id ' + newClassId)
-                self.sio.emit('vbUpdate')
+                try:
+                    if debug: 
+                        print('The user is currently in the class with the id ' + newClassId)
+                    self.sio.emit('vbUpdate')
+                except:
+                    print("No class, or couldn't send update.")
+                    
 
             @self.sio.event
             def vbUpdate(data):
