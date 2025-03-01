@@ -1,15 +1,15 @@
-from PyQt6.QtCore import Qt, QAbstractTableModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal
-from PyQt6.QtGui import qRgb, QIcon
-from PyQt6.QtWidgets import (QApplication, QCheckBox, QDialog, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView)
+from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
+from PyQt6.QtGui import qRgb, QIcon, QPalette
+from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
 import sys, os
 import socketio
 
 debug = True
-
+versionNumber = "1.0.2"
 try:
     from ctypes import windll  # Only exists on Windows.
-    myappid = 'ljharnish.formbardesktop.1.0'
+    myappid = 'ljharnish.formbardesktop.' + versionNumber
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
@@ -22,44 +22,50 @@ class FormbarApp(QDialog):
 
     def __init__(self, parent=None): 
         voteHeaders = ["Votes", "Responses", "Color"]
-        voteRows = []
+        voteRows = [("test", "2", "2"),("test", "2", "2"),("test", "2", "2")]
 
         super(FormbarApp, self).__init__(parent)
 
-
-        #lightpalette = QApplication.palette()
-        #lightpalette.setColor(lightpalette.ColorRole.Window, qRgb(255, 255, 255))
-        #lightpalette.setColor(lightpalette.ColorRole.WindowText, qRgb(0, 0, 0))
-        #lightpalette.setColor(lightpalette.ColorRole.Base, qRgb(150, 150, 150))
-        #lightpalette.setColor(lightpalette.ColorRole.AlternateBase, qRgb(120, 120, 120))
-        #lightpalette.setColor(lightpalette.ColorRole.ToolTipBase, qRgb(0, 0, 0))
-        #lightpalette.setColor(lightpalette.ColorRole.ToolTipText, qRgb(0, 0, 0))
-        #lightpalette.setColor(lightpalette.ColorRole.Accent, qRgb(255, 0, 0))
-        #lightpalette.setColor(lightpalette.ColorRole.Midlight, qRgb(255, 0, 0))
-        #lightpalette.setColor(lightpalette.ColorRole.Text, qRgb(255, 255, 255))
-        #lightpalette.setColor(lightpalette.ColorRole.Button, qRgb(120, 120, 120))
-        #lightpalette.setColor(lightpalette.ColorRole.ButtonText, qRgb(0, 0, 0))
-        #lightpalette.setColor(lightpalette.ColorRole.BrightText, qRgb(255, 0, 0))
-        #lightpalette.setColor(lightpalette.ColorRole.Highlight, qRgb(100, 100, 225))
-        #lightpalette.setColor(lightpalette.ColorRole.HighlightedText, qRgb(0, 0, 0))
-        #QApplication.setPalette(lightpalette)
+        #? Themes
+        lightpalette = QApplication.palette()
+        lightpalette.setColor(lightpalette.ColorRole.Window, qRgb(110, 110, 110))
+        lightpalette.setColor(lightpalette.ColorRole.WindowText, qRgb(255, 255, 255))
+        lightpalette.setColor(lightpalette.ColorRole.Base, qRgb(150, 150, 150))
+        lightpalette.setColor(lightpalette.ColorRole.AlternateBase, qRgb(120, 120, 120))
+        lightpalette.setColor(lightpalette.ColorRole.Accent, qRgb(255, 0, 0))
+        lightpalette.setColor(lightpalette.ColorRole.Text, qRgb(255, 255, 255))
+        lightpalette.setColor(lightpalette.ColorRole.Button, qRgb(120, 120, 120))
+        lightpalette.setColor(lightpalette.ColorRole.ButtonText, qRgb(255, 255, 255))
 
         darkpalette = QApplication.palette()
         darkpalette.setColor(darkpalette.ColorRole.Window, qRgb(34, 34, 34))
         darkpalette.setColor(darkpalette.ColorRole.WindowText, qRgb(255, 255, 255))
         darkpalette.setColor(darkpalette.ColorRole.Base, qRgb(15, 15, 15))
         darkpalette.setColor(darkpalette.ColorRole.AlternateBase, qRgb(41, 44, 51))
-        darkpalette.setColor(darkpalette.ColorRole.ToolTipBase, qRgb(255, 255, 255))
-        darkpalette.setColor(darkpalette.ColorRole.ToolTipText, qRgb(255, 255, 255))
-        darkpalette.setColor(darkpalette.ColorRole.Text, qRgb(255, 255, 255))
         darkpalette.setColor(darkpalette.ColorRole.Accent, qRgb(255, 0, 0))
+        darkpalette.setColor(darkpalette.ColorRole.Text, qRgb(255, 255, 255))
         darkpalette.setColor(darkpalette.ColorRole.Button, qRgb(41, 44, 51))
         darkpalette.setColor(darkpalette.ColorRole.ButtonText, qRgb(255, 255, 255))
-        darkpalette.setColor(darkpalette.ColorRole.BrightText, qRgb(255, 0, 0))
-        darkpalette.setColor(darkpalette.ColorRole.Highlight, qRgb(100, 100, 225))
-        darkpalette.setColor(darkpalette.ColorRole.HighlightedText, qRgb(0, 0, 0))
-        QApplication.setPalette(darkpalette)
+        
+        redPalette = QApplication.palette()
+        redPalette.setColor(redPalette.ColorRole.Window, qRgb(133, 0, 7))
+        redPalette.setColor(redPalette.ColorRole.WindowText, qRgb(255, 173, 178))
+        redPalette.setColor(redPalette.ColorRole.Base, qRgb(56, 0, 3))
+        redPalette.setColor(redPalette.ColorRole.AlternateBase, qRgb(36, 0, 2))
+        redPalette.setColor(redPalette.ColorRole.Accent, qRgb(255, 0, 0))
+        redPalette.setColor(redPalette.ColorRole.Text, qRgb(255, 173, 178))
+        redPalette.setColor(redPalette.ColorRole.Button, qRgb(56, 0, 3))
+        redPalette.setColor(redPalette.ColorRole.ButtonText, qRgb(255, 173, 178))
 
+        bluePalette = QApplication.palette()
+        bluePalette.setColor(bluePalette.ColorRole.Window, qRgb(0, 70, 140))
+        bluePalette.setColor(bluePalette.ColorRole.WindowText, qRgb(171, 213, 255))
+        bluePalette.setColor(bluePalette.ColorRole.Base, qRgb(0, 27, 54))
+        bluePalette.setColor(bluePalette.ColorRole.AlternateBase, qRgb(0, 18, 36))
+        bluePalette.setColor(bluePalette.ColorRole.Accent, qRgb(0, 0, 255))
+        bluePalette.setColor(bluePalette.ColorRole.Text, qRgb(171, 213, 255))
+        bluePalette.setColor(bluePalette.ColorRole.Button, qRgb(0, 27, 54))
+        bluePalette.setColor(bluePalette.ColorRole.ButtonText, qRgb(171, 213, 255))
 
         self.worker = WorkerObject()
         self.thread = QThread()
@@ -79,23 +85,10 @@ class FormbarApp(QDialog):
 
         #? VoteBox
 
-        class TableModel(QAbstractTableModel):
-            def rowCount(self, parent):
-                return len(voteRows)
-            def columnCount(self, parent):
-                return len(voteHeaders)
-            def data(self, index, role):
-                if role != Qt.ItemDataRole.DisplayRole:
-                    return QVariant()
-                return voteRows[index.row()][index.column()]
-            def headerData(self, section, orientation, role):
-                if role != Qt.ItemDataRole.DisplayRole or orientation != Qt.Orientation.Horizontal:
-                    return QVariant()
-                return voteHeaders[section]
-
         votesGroup = QGroupBox("Votes")
 
-        model = TableModel()
+
+        model = TableModel(None, ["Votes", "Responses", "Color"], [("test", "2", "2"),("test", "2", "2"),("test", "2", "2")])
         voteView = QTableView()
         voteView.setModel(model)
         voteView.setSelectionMode(voteView.SelectionMode.NoSelection)
@@ -152,17 +145,32 @@ class FormbarApp(QDialog):
 
         #? Settings Box
 
+        def changeTheme(theme):
+            match theme:
+                case 0:
+                    QApplication.setPalette(lightpalette)
+                case 1:
+                    QApplication.setPalette(darkpalette)
+                case 2:
+                    QApplication.setPalette(redPalette)
+                case 3:
+                    QApplication.setPalette(bluePalette)
+
+
+
         settingsBox = QGroupBox("Settings")
 
-        #darkModeButton = QCheckBox("Dark Mode (WIP)")
-        #darkModeButton.clicked.connect(self.darkModeToggle)
+        themeDropdownLabel = QLabel("Theme:")
+        themeDropdown = QComboBox()
+        themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
+        themeDropdown.currentIndexChanged.connect(changeTheme)
 
         settingsApiKeyLabel = QLabel("Your Api Key:")
         settingsApiKey = QLineEdit("")
         settingsApiKey.setEchoMode(QLineEdit.EchoMode.Password)
         settingsApiKey.setFixedHeight(20)
         
-        settingsApiLinkLabel = QLabel("API Link (leave blank if not a developer)")
+        settingsApiLinkLabel = QLabel("API Link (leave blank if not a developer):")
         settingsApiLink = QLineEdit("")
         settingsApiLink.setFixedHeight(20)
 
@@ -175,7 +183,8 @@ class FormbarApp(QDialog):
         settingsConnect.clicked.connect(submitApi)
 
         settingslayout = QVBoxLayout()
-        #settingslayout.addWidget(darkModeButton)
+        settingslayout.addWidget(themeDropdownLabel)
+        settingslayout.addWidget(themeDropdown)
         settingslayout.addWidget(settingsApiKeyLabel)
         settingslayout.addWidget(settingsApiKey)
         settingslayout.addWidget(settingsApiLinkLabel)
@@ -196,20 +205,18 @@ class FormbarApp(QDialog):
         mainLayout.addWidget(votesGroup, 1, 0, 2, 0)
         mainLayout.addWidget(votingBox, 4, 0)
         mainLayout.addWidget(helpBreakBox, 4, 1)
-        mainLayout.addWidget(settingsBox, 5, 0, 1, 2)
+        mainLayout.addWidget(settingsBox, 5, 0, 2, 2)
         mainLayout.setRowStretch(1, 1)
         mainLayout.setRowStretch(2, 1)
         mainLayout.setColumnStretch(0, 1)
         mainLayout.setColumnStretch(1, 1)
-        self.setFixedSize(500, 600)
+        self.setFixedSize(500, 700)
         self.setLayout(mainLayout)
-        #print(QStyleFactory.keys())
-        self.setWindowTitle("Formbar Desktop v1.0 | Made by Landon Harnish")
+        self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
-        #QApplication.setStyle(QStyleFactory.create("Fusion"))
-        #QApplication.setPalette(QApplication.style().standardPalette())
+        QApplication.setPalette(lightpalette)
 
 
         self.currentData = {}
@@ -252,6 +259,11 @@ class FormbarApp(QDialog):
                 optionRadio = QRadioButton(option["answer"])
                 optionRadio.clicked.connect(partial(self.voteSelectedSignal.emit, option["answer"]))
                 optionRadio.clicked.connect(partial(saveVote, option["answer"]))
+                optionRadio.setStyleSheet("color: " + option["color"])
+                optionColorPalette = optionRadio.palette()
+                hexToRgb = tuple(int(option["color"].strip("#")[i:i+2], 16) for i in (0, 2, 4))
+                optionColorPalette.setColor(optionColorPalette.ColorRole.Accent, qRgb(hexToRgb[0], hexToRgb[1], hexToRgb[2]))
+                optionRadio.setPalette(optionColorPalette)
 
                 if option["answer"] == self.lastVote:
                     optionRadio.setChecked(True)
@@ -261,36 +273,24 @@ class FormbarApp(QDialog):
         def createRows(data):
             newRows = []
 
+            allResponses = 0
+
             for option in self.voteOptions:
+                allResponses += option["responses"]
                 newRow = (option["answer"], option["responses"], option["color"])
                 newRows.append(newRow)
             
 
-            #noResRow = ("No Response", self.currentData["totalResponders"] - self.currentData["totalResponses"], "None")
-            #newRows.append(noResRow)
+            noResRow = ("No Response", self.currentData["totalResponders"] - allResponses, "None")
+            newRows.append(noResRow)
 
             return newRows
 
 
         def updateVotes():
             voteRows = createRows(self.currentData)
-
-            class TableModel(QAbstractTableModel):
-                def rowCount(self, parent):
-                    return len(voteRows)
-                def columnCount(self, parent):
-                    return len(voteHeaders)
-                def data(self, index, role):
-                    if role != Qt.ItemDataRole.DisplayRole:
-                        return QVariant()
-                    return voteRows[index.row()][index.column()]
-                def headerData(self, section, orientation, role):
-                    if role != Qt.ItemDataRole.DisplayRole or orientation != Qt.Orientation.Horizontal:
-                        return QVariant()
-                    return voteHeaders[section]
-                
             voteView.setModel(None) 
-            model = TableModel()
+            model = TableModel(None, ["Votes", "Responses", "Color"], voteRows)
             voteView.setModel(model)
             
         
@@ -305,6 +305,52 @@ class FormbarApp(QDialog):
 
         self.worker.updateData.connect(updateData)
         self.worker.disableApi.connect(disableApi)
+
+
+class TableModel(QAbstractTableModel):
+    def __init__(self, parent, header, tabledata):
+        QAbstractTableModel.__init__(self, parent)
+        self.modelTableData = tabledata
+        self.header = header
+
+        self.background_colors = dict()
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self.modelTableData)
+
+    def columnCount(self, parent=QModelIndex()):
+        return len(self.header)
+
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        if (
+            0 <= index.row() < self.rowCount()
+            and 0 <= index.column() < self.columnCount()
+        ):
+            if role == Qt.ItemDataRole.BackgroundRole:
+                return qRgb(255, 5, 0)
+            elif role == Qt.ItemDataRole.DisplayRole:
+                return self.modelTableData[index.row()][index.column()]
+
+    def setData(self, index, value, role):
+        if not index.isValid():
+            return False
+        if (
+            0 <= index.row() < self.rowCount()
+            and 0 <= index.column() < self.columnCount()
+        ):
+            if role == Qt.ItemDataRole.BackgroundRole and index.isValid():
+                ix = self.index(index.row(), 0)
+                pix = QPersistentModelIndex(ix)
+                self.background_colors[pix] = value
+                return True
+        return False
+
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+            return self.header[col]
+        return None
 
 
 class WorkerObject(QObject):
@@ -339,7 +385,7 @@ class WorkerObject(QObject):
                     print("disconnected from server")
 
             if not apilink:
-                apilink = 'https://formbeta.yorktechapps.com'
+                apilink = 'https://formbeta.yorktechapps.com/'
             print(apilink)
             self.sio.connect(apilink, { "api": apikey })
         except:
