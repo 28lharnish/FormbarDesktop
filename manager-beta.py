@@ -11,7 +11,7 @@ from models import *
 from managerLayout import ManagerLayout
 
 debug = True
-versionNumber = "1.0.3"
+versionNumber = "1.0.0b"
 
 try:
     from ctypes import windll
@@ -124,14 +124,14 @@ class FormbarApp(QDialog):
         #? Load configs
         
         def setConfig(keys):
-            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'r')
             configData = json.load(configJSON)
             configJSON.close()
 
             for key in keys:
                 configData[key[0]] = key[1]
 
-            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w')
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'w')
             json.dump(configData, configJSON)
             configJSON.close()
 
@@ -149,7 +149,7 @@ class FormbarApp(QDialog):
                     QApplication.setPalette(bluePalette)
 
         try:
-            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'r')
             configData = json.load(configJSON)
 
             if "apiKey" in configData:
@@ -163,7 +163,7 @@ class FormbarApp(QDialog):
             configJSON.close()
         except:
             print("No Config JSON, creating one now.")
-            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w')
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'w')
             json.dump({"fdTheme": "0"}, configJSON)
             configJSON.close()
 

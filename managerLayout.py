@@ -1,6 +1,6 @@
 
 from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
-from PyQt6.QtGui import qRgb, QIcon, QPalette
+from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont
 from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
 from models import TableModel
 
@@ -23,6 +23,14 @@ class ManagerLayout:
         self.voteView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.voteView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.voteView.verticalHeader().hide()
+        votesFont = QFont()
+        votesFont.setBold(True)
+        votesFont.setPointSize(16)
+        headFont = QFont()
+        headFont.setBold(False)
+        headFont.setPointSize(10)
+        self.voteView.setFont(votesFont)
+        self.voteView.horizontalHeader().setFont(headFont)
 
         self.votesLayout = QGridLayout()
         self.votesLayout.addWidget(self.voteView, 1, 0, 1, 2)

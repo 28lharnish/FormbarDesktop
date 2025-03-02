@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
-from PyQt6.QtGui import qRgb, QIcon, QPalette
+from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont
 from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
 import sys, os
@@ -11,7 +11,7 @@ from models import *
 from studentLayout import StudentLayout
 
 debug = True
-versionNumber = "1.0.3"
+versionNumber = "1.0.4b"
 
 try:
     from ctypes import windll
@@ -193,7 +193,6 @@ class FormbarApp(QDialog):
                 optionRadio = QRadioButton(option["answer"])
                 optionRadio.clicked.connect(partial(self.voteSelectedSignal.emit, option["answer"]))
                 optionRadio.clicked.connect(partial(saveVote, option["answer"]))
-                optionRadio.setStyleSheet("color: " + option["color"])
                 optionColorPalette = optionRadio.palette()
                 hexToRgb = tuple(int(option["color"].strip("#")[i:i+2], 16) for i in (0, 2, 4))
                 optionColorPalette.setColor(optionColorPalette.ColorRole.Accent, qRgb(hexToRgb[0], hexToRgb[1], hexToRgb[2]))

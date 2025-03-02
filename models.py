@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, QPersistentModelIndex
-from PyQt6.QtGui import qRgb
+from PyQt6.QtGui import qRgb, QBrush, QFont
 
 class TableModel(QAbstractTableModel):
     def __init__(self, parent, header, tabledata):
@@ -22,24 +22,26 @@ class TableModel(QAbstractTableModel):
             0 <= index.row() < self.rowCount()
             and 0 <= index.column() < self.columnCount()
         ):
-            if role == Qt.ItemDataRole.BackgroundRole:
-                return qRgb(255, 5, 0)
-            elif role == Qt.ItemDataRole.DisplayRole:
+            if role == Qt.ItemDataRole.BackgroundRole: # Set Background
+
+                if index.column() == 2:
+                    def getColor():
+                        if "#" in self.modelTableData[index.row()][index.column()]:
+                            rgbColor = tuple(int(str(self.modelTableData[index.row()][index.column()]).split('#')[1][i:i+2], 16) for i in (0, 2, 4))
+                            color = QBrush(qRgb(rgbColor[0],rgbColor[1], rgbColor[2]), Qt.BrushStyle.SolidPattern)
+                            return color
+                        elif "None" in self.modelTableData[index.row()][index.column()]:
+                            color = QBrush(qRgb(222, 222, 222), Qt.BrushStyle.SolidPattern)
+                            return color
+                    return getColor()
+                
+            elif role == Qt.ItemDataRole.DisplayRole: # Set Text (hides color text)
+                if index.column() == 2:
+                    return ''
                 return self.modelTableData[index.row()][index.column()]
 
-    def setData(self, index, value, role):
-        if not index.isValid():
-            return False
-        if (
-            0 <= index.row() < self.rowCount()
-            and 0 <= index.column() < self.columnCount()
-        ):
-            if role == Qt.ItemDataRole.BackgroundRole and index.isValid():
-                ix = self.index(index.row(), 0)
-                pix = QPersistentModelIndex(ix)
-                self.background_colors[pix] = value
-                return True
-        return False
+            elif role == Qt.ItemDataRole.TextAlignmentRole: # Set Text Alignment
+                return Qt.AlignmentFlag.AlignCenter
 
     def headerData(self, col, orientation, role):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
