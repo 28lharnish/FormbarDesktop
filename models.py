@@ -42,6 +42,17 @@ class TableModel(QAbstractTableModel):
 
             elif role == Qt.ItemDataRole.TextAlignmentRole: # Set Text Alignment
                 return Qt.AlignmentFlag.AlignCenter
+            
+            elif role == Qt.ItemDataRole.ForegroundRole:
+                def getColor():
+                    if "#" in self.modelTableData[index.row()][2]:
+                        rgbColor = tuple(int(str(self.modelTableData[index.row()][2]).split('#')[1][i:i+2], 16) for i in (0, 2, 4))
+                        color = QBrush(qRgb(rgbColor[0],rgbColor[1], rgbColor[2]), Qt.BrushStyle.SolidPattern)
+                        return color
+                    elif "None" in self.modelTableData[index.row()][2]:
+                        color = QBrush(qRgb(222, 222, 222), Qt.BrushStyle.SolidPattern)
+                        return color
+                return getColor()
 
     def headerData(self, col, orientation, role):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

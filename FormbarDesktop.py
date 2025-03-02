@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
-from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont
-from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
+from PyQt6.QtCore import Qt, QThread, QObject, pyqtSlot, pyqtSignal
+from PyQt6.QtGui import qRgb, QIcon
+from PyQt6.QtWidgets import QApplication, QDialog, QRadioButton
 from functools import partial
 import sys, os
 import socketio
@@ -9,6 +9,7 @@ import json
 #? Import external layouts
 from models import *
 from studentLayout import StudentLayout
+from themes import Themes
 
 debug = True
 versionNumber = "1.0.4b"
@@ -29,47 +30,7 @@ class FormbarApp(QDialog):
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
 
-        #? Themes
-        lightpalette = QApplication.palette()
-        lightpalette.setColor(lightpalette.ColorRole.Window, qRgb(110, 110, 110))
-        lightpalette.setColor(lightpalette.ColorRole.WindowText, qRgb(255, 255, 255))
-        lightpalette.setColor(lightpalette.ColorRole.Base, qRgb(150, 150, 150))
-        lightpalette.setColor(lightpalette.ColorRole.AlternateBase, qRgb(120, 120, 120))
-        lightpalette.setColor(lightpalette.ColorRole.Accent, qRgb(255, 0, 0))
-        lightpalette.setColor(lightpalette.ColorRole.Text, qRgb(255, 255, 255))
-        lightpalette.setColor(lightpalette.ColorRole.Button, qRgb(120, 120, 120))
-        lightpalette.setColor(lightpalette.ColorRole.ButtonText, qRgb(255, 255, 255))
-
-        darkpalette = QApplication.palette()
-        darkpalette.setColor(darkpalette.ColorRole.Window, qRgb(34, 34, 34))
-        darkpalette.setColor(darkpalette.ColorRole.WindowText, qRgb(255, 255, 255))
-        darkpalette.setColor(darkpalette.ColorRole.Base, qRgb(15, 15, 15))
-        darkpalette.setColor(darkpalette.ColorRole.AlternateBase, qRgb(41, 44, 51))
-        darkpalette.setColor(darkpalette.ColorRole.Accent, qRgb(255, 0, 0))
-        darkpalette.setColor(darkpalette.ColorRole.Text, qRgb(255, 255, 255))
-        darkpalette.setColor(darkpalette.ColorRole.Button, qRgb(41, 44, 51))
-        darkpalette.setColor(darkpalette.ColorRole.ButtonText, qRgb(255, 255, 255))
-        
-        redPalette = QApplication.palette()
-        redPalette.setColor(redPalette.ColorRole.Window, qRgb(133, 0, 7))
-        redPalette.setColor(redPalette.ColorRole.WindowText, qRgb(255, 173, 178))
-        redPalette.setColor(redPalette.ColorRole.Base, qRgb(56, 0, 3))
-        redPalette.setColor(redPalette.ColorRole.AlternateBase, qRgb(36, 0, 2))
-        redPalette.setColor(redPalette.ColorRole.Accent, qRgb(255, 0, 0))
-        redPalette.setColor(redPalette.ColorRole.Text, qRgb(255, 173, 178))
-        redPalette.setColor(redPalette.ColorRole.Button, qRgb(56, 0, 3))
-        redPalette.setColor(redPalette.ColorRole.ButtonText, qRgb(255, 173, 178))
-
-        bluePalette = QApplication.palette()
-        bluePalette.setColor(bluePalette.ColorRole.Window, qRgb(0, 70, 140))
-        bluePalette.setColor(bluePalette.ColorRole.WindowText, qRgb(171, 213, 255))
-        bluePalette.setColor(bluePalette.ColorRole.Base, qRgb(0, 27, 54))
-        bluePalette.setColor(bluePalette.ColorRole.AlternateBase, qRgb(0, 18, 36))
-        bluePalette.setColor(bluePalette.ColorRole.Accent, qRgb(0, 0, 255))
-        bluePalette.setColor(bluePalette.ColorRole.Text, qRgb(171, 213, 255))
-        bluePalette.setColor(bluePalette.ColorRole.Button, qRgb(0, 27, 54))
-        bluePalette.setColor(bluePalette.ColorRole.ButtonText, qRgb(171, 213, 255))
-
+        themes = Themes()
         self.worker = WorkerObject()
         self.thread = QThread()
         self.worker.moveToThread(self.thread)
@@ -100,7 +61,7 @@ class FormbarApp(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
-        QApplication.setPalette(lightpalette)
+        QApplication.setPalette(themes.lightpalette)
 
 
         #? Load configs
@@ -122,13 +83,15 @@ class FormbarApp(QDialog):
             studentLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
-                    QApplication.setPalette(lightpalette)
+                    QApplication.setPalette(themes.lightpalette)
                 case 1:
-                    QApplication.setPalette(darkpalette)
+                    QApplication.setPalette(themes.darkpalette)
                 case 2:
-                    QApplication.setPalette(redPalette)
+                    QApplication.setPalette(themes.redPalette)
                 case 3:
-                    QApplication.setPalette(bluePalette)
+                    QApplication.setPalette(themes.bluePalette)
+                #case 4:
+                #    QApplication.setPalette(themes.pinkGradient)
 
         try:
             configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
@@ -195,6 +158,7 @@ class FormbarApp(QDialog):
                 optionRadio.clicked.connect(partial(saveVote, option["answer"]))
                 optionColorPalette = optionRadio.palette()
                 hexToRgb = tuple(int(option["color"].strip("#")[i:i+2], 16) for i in (0, 2, 4))
+                optionColorPalette.setColor(optionColorPalette.ColorRole.WindowText, qRgb(hexToRgb[0], hexToRgb[1], hexToRgb[2]))
                 optionColorPalette.setColor(optionColorPalette.ColorRole.Accent, qRgb(hexToRgb[0], hexToRgb[1], hexToRgb[2]))
                 optionRadio.setPalette(optionColorPalette)
 

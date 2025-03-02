@@ -1,15 +1,20 @@
 
 from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
 from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont
-from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
+from PyQt6.QtWidgets import (QApplication, QAbstractItemView, QComboBox, QDialog, QStyle, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
 from models import TableModel
 
 class StudentLayout:
     def __init__(self):
         self.promptText = QLineEdit("Please input your API Key, then click Connect.")
         self.promptText.setReadOnly(True)
+        self.promptText.setDisabled(True)
         self.promptText.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.promptText.setFixedHeight(40)
+        promptFont = QFont()
+        promptFont.setBold(True)
+        promptFont.setPointSize(16)
+        self.promptText.setFont(promptFont)
 
         #? VoteBox
 
@@ -19,7 +24,7 @@ class StudentLayout:
         model = TableModel(None, ["Votes", "Responses", "Color"], [])
         self.voteView = QTableView()
         self.voteView.setModel(model)
-        self.voteView.setSelectionMode(self.voteView.SelectionMode.NoSelection)
+        self.voteView.setDisabled(True)
         self.voteView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.voteView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.voteView.verticalHeader().hide()
@@ -57,10 +62,16 @@ class StudentLayout:
         self.helpBreakBox = QGroupBox("Need Help / Break?")
 
         self.helpTicketButton = QPushButton("Send Help Ticket")
+        self.helpTicketButton.setFixedHeight(40)
+        self.helpTicketButton.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.takeBreakButton = QPushButton("Take a Break")
+        self.takeBreakButton.setFixedHeight(40)
+        self.takeBreakButton.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.removeVoteButton = QPushButton("Remove Vote")
+        self.removeVoteButton.setFixedHeight(40)
+        self.removeVoteButton.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.helpBreakLayout = QVBoxLayout()
         self.helpBreakLayout.addWidget(self.helpTicketButton)
@@ -83,17 +94,21 @@ class StudentLayout:
         self.themeDropdownLabel = QLabel("Theme:")
         self.themeDropdown = QComboBox()
         self.themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
+        self.themeDropdown.setFixedHeight(40)
+        self.themeDropdown.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.settingsApiKeyLabel = QLabel("Your Api Key:")
         self.settingsApiKey = QLineEdit("")
+        self.settingsApiKey.setFixedHeight(40)
         self.settingsApiKey.setEchoMode(QLineEdit.EchoMode.Password)
-        self.settingsApiKey.setFixedHeight(20)
         
         self.settingsApiLinkLabel = QLabel("API Link (Leave this field blank if you're not a developer):")
         self.settingsApiLink = QLineEdit("")
-        self.settingsApiLink.setFixedHeight(20)
+        self.settingsApiLink.setFixedHeight(40)
 
         self.settingsConnect = QPushButton("Connect")
+        self.settingsConnect.setFixedHeight(40)
+        self.settingsConnect.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.settingslayout = QVBoxLayout()
         self.settingslayout.addWidget(self.themeDropdownLabel)
