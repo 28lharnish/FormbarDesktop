@@ -1,6 +1,6 @@
 # <img src='https://github.com/user-attachments/assets/1a8ae6c5-eac1-47d6-b442-b2d55383660d' height=25></img> Formbar Desktop
 
-A desktop client for the app [Formbar](https://github.com/csmith1188/) used in the York County School of Technology I.T. field.
+A desktop client for the app [Formbar](https://github.com/csmith1188/).
 
 ### How to Use:
 1. Unpack the zip to a safe location.
