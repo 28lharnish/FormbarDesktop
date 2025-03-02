@@ -4,9 +4,11 @@ from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGro
 from functools import partial
 import sys, os
 import socketio
+import json
 
 debug = True
 versionNumber = "1.0.3"
+
 try:
     from ctypes import windll
     myappid = 'ljharnish.formbardesktop.' + versionNumber
@@ -141,33 +143,19 @@ class FormbarApp(QDialog):
 
 
         #? Settings Box
-
-        def changeTheme(theme):
-            match theme:
-                case 0:
-                    QApplication.setPalette(lightpalette)
-                case 1:
-                    QApplication.setPalette(darkpalette)
-                case 2:
-                    QApplication.setPalette(redPalette)
-                case 3:
-                    QApplication.setPalette(bluePalette)
-
-
-
+        
         settingsBox = QGroupBox("Settings")
 
         themeDropdownLabel = QLabel("Theme:")
         themeDropdown = QComboBox()
         themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
-        themeDropdown.currentIndexChanged.connect(changeTheme)
 
         settingsApiKeyLabel = QLabel("Your Api Key:")
         settingsApiKey = QLineEdit("")
         settingsApiKey.setEchoMode(QLineEdit.EchoMode.Password)
         settingsApiKey.setFixedHeight(20)
         
-        settingsApiLinkLabel = QLabel("API Link (leave blank if not a developer):")
+        settingsApiLinkLabel = QLabel("API Link (Leave this field blank if you're not a developer):")
         settingsApiLink = QLineEdit("")
         settingsApiLink.setFixedHeight(20)
 
@@ -214,6 +202,56 @@ class FormbarApp(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
         QApplication.setPalette(lightpalette)
+
+
+        #? Load configs
+        
+        def setConfig(keys):
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
+            configData = json.load(configJSON)
+            configJSON.close()
+
+            for key in keys:
+                configData[key[0]] = key[1]
+
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w')
+            json.dump(configData, configJSON)
+            configJSON.close()
+
+        def setTheme(t):
+            setConfig([("fdTheme", t)])
+            themeDropdown.setCurrentIndex(t)
+            match t:
+                case 0:
+                    QApplication.setPalette(lightpalette)
+                case 1:
+                    QApplication.setPalette(darkpalette)
+                case 2:
+                    QApplication.setPalette(redPalette)
+                case 3:
+                    QApplication.setPalette(bluePalette)
+
+        try:
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
+            configData = json.load(configJSON)
+
+            if "apiKey" in configData:
+                settingsApiKey.setText(configData["apiKey"])
+            if "apiLink" in configData:
+                settingsApiLink.setText(configData["apiLink"])
+
+            if "fdTheme" in configData:
+                setTheme(configData["fdTheme"])
+
+            configJSON.close()
+        except:
+            print("No Config JSON, creating one now.")
+            configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w')
+            json.dump({"fdTheme": "0"}, configJSON)
+            configJSON.close()
+
+
+        themeDropdown.currentIndexChanged.connect(setTheme)
 
 
         self.currentData = {}
@@ -292,6 +330,7 @@ class FormbarApp(QDialog):
             
         
         def disableApi():
+            setConfig([("apiKey", str(settingsApiKey.text())), ("apiLink", str(settingsApiLink.text()))])
             settingsApiKeyLabel.deleteLater()
             settingsApiKey.deleteLater()
             settingsApiLinkLabel.deleteLater()
