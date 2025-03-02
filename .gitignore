@@ -3,3 +3,4 @@ build/
 *.ifp
 *.bat
 *.json
+__pycache__/

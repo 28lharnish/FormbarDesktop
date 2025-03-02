@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
 from PyQt6.QtGui import qRgb, QIcon, QPalette
-from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
+from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTabWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
 import sys, os
 import socketio
@@ -8,7 +8,7 @@ import json
 
 #? Import external layouts
 from models import *
-from studentLayout import StudentLayout
+from managerLayout import ManagerLayout
 
 debug = True
 versionNumber = "1.0.3"
@@ -25,6 +25,7 @@ class FormbarApp(QDialog):
     helpTicketSignal = pyqtSignal()
     takeBreakSignal = pyqtSignal()
     voteSelectedSignal = pyqtSignal(str)
+    sendPollSignalTUTD = pyqtSignal()
 
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
@@ -77,29 +78,46 @@ class FormbarApp(QDialog):
         self.helpTicketSignal.connect(self.worker.helpTicket)
         self.takeBreakSignal.connect(self.worker.takeBreak)
         self.voteSelectedSignal.connect(self.worker.voteSelected)
+        self.sendPollSignalTUTD.connect(self.worker.sendTUTD)
         self.thread.start()
-
-        def getLayout():
-            return StudentLayout()
         
-        studentLayout = getLayout()
+        def getLayout():
+            return ManagerLayout()
+        
+        managerLayout = getLayout()
 
         def submitApi(s):
-            apiKey = studentLayout.settingsApiKey.text()
-            apiLink = studentLayout.settingsApiLink.text()
+            apiKey = managerLayout.settingsApiKey.text()
+            apiLink = managerLayout.settingsApiLink.text()
             self.startSocketSignal.emit(apiKey, apiLink)
 
-        studentLayout.settingsConnect.clicked.connect(submitApi)
-        studentLayout.helpTicketButton.clicked.connect(self.helpTicketSignal.emit)
-        studentLayout.takeBreakButton.clicked.connect(self.takeBreakSignal.emit)
-        studentLayout.removeVoteButton.clicked.connect(partial(self.voteSelectedSignal.emit, 'remove'))
+        managerLayout.settingsConnect.clicked.connect(submitApi)
 
-        self.setLayout(studentLayout.mainLayout)
-        self.setFixedSize(500, 700)
+        formPage = QWidget()
+        formPageLayout = QHBoxLayout()
+        formPageStudentView = QWidget()
+        formPageStudentView.setLayout(managerLayout.votingShownLayout)
+        formPageStudentView.setFixedWidth(500)
+
+        formPageManagerView = QWidget()
+        formPageManagerView.setLayout(managerLayout.managerFormLayout)
+        managerLayout.fastPollTUTD.clicked.connect(self.sendPollSignalTUTD.emit)
+        formPageLayout.addWidget(formPageStudentView, 0, Qt.AlignmentFlag.AlignLeft)
+        formPageLayout.addWidget(formPageManagerView)
+        formPage.setLayout(formPageLayout)
+
+        tabs = QTabWidget()
+        tabs.addTab(formPage, "Active Form")
+
+        layout = QHBoxLayout()
+        layout.addWidget(tabs)
+
+        self.setLayout(layout)
+        self.setFixedSize(1200, 700)
         self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
-        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
+        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), '/icons/icon.ico')))
         QApplication.setPalette(lightpalette)
 
 
@@ -119,7 +137,7 @@ class FormbarApp(QDialog):
 
         def setTheme(t):
             setConfig([("fdTheme", t)])
-            studentLayout.themeDropdown.setCurrentIndex(t)
+            managerLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
                     QApplication.setPalette(lightpalette)
@@ -135,9 +153,9 @@ class FormbarApp(QDialog):
             configData = json.load(configJSON)
 
             if "apiKey" in configData:
-                studentLayout.settingsApiKey.setText(configData["apiKey"])
+                managerLayout.settingsApiKey.setText(configData["apiKey"])
             if "apiLink" in configData:
-                studentLayout.settingsApiLink.setText(configData["apiLink"])
+                managerLayout.settingsApiLink.setText(configData["apiLink"])
 
             if "fdTheme" in configData:
                 setTheme(configData["fdTheme"])
@@ -150,7 +168,7 @@ class FormbarApp(QDialog):
             configJSON.close()
 
 
-        studentLayout.themeDropdown.currentIndexChanged.connect(setTheme)
+        managerLayout.themeDropdown.currentIndexChanged.connect(setTheme)
 
 
         self.currentData = {}
@@ -168,41 +186,13 @@ class FormbarApp(QDialog):
                     print(self.voteOptions)
 
             updatePrompt()
-            updateVoteOptions()
             updateVotes()
 
 
         def updatePrompt():
-            studentLayout.promptText.setText(self.currentData["prompt"])
+            managerLayout.promptText.setText(self.currentData["prompt"])
             if self.currentData["status"] == False:
-                studentLayout.promptText.setText("No current poll.")
-
-        def updateVoteOptions():
-            while studentLayout.votinglayout.count():
-                item = studentLayout.votinglayout.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    widget.deleteLater()
-                elif item.layout() is not None:
-                    item.layout().deleteLater()
-
-            for option in self.voteOptions:
-                def saveVote(name):
-                    self.lastVote = name
-
-                optionRadio = QRadioButton(option["answer"])
-                optionRadio.clicked.connect(partial(self.voteSelectedSignal.emit, option["answer"]))
-                optionRadio.clicked.connect(partial(saveVote, option["answer"]))
-                optionRadio.setStyleSheet("color: " + option["color"])
-                optionColorPalette = optionRadio.palette()
-                hexToRgb = tuple(int(option["color"].strip("#")[i:i+2], 16) for i in (0, 2, 4))
-                optionColorPalette.setColor(optionColorPalette.ColorRole.Accent, qRgb(hexToRgb[0], hexToRgb[1], hexToRgb[2]))
-                optionRadio.setPalette(optionColorPalette)
-
-                if option["answer"] == self.lastVote:
-                    optionRadio.setChecked(True)
-
-                studentLayout.votinglayout.addWidget(optionRadio)
+                managerLayout.promptText.setText("No current poll.")
 
         def createRows(data):
             newRows = []
@@ -223,23 +213,70 @@ class FormbarApp(QDialog):
 
         def updateVotes():
             voteRows = createRows(self.currentData)
-            studentLayout.voteView.setModel(None) 
+            managerLayout.voteView.setModel(None) 
             model = TableModel(None, ["Votes", "Responses", "Color"], voteRows)
-            studentLayout.voteView.setModel(model)
+            managerLayout.voteView.setModel(model)
             
         
         def disableApi():
-            setConfig([("apiKey", str(studentLayout.settingsApiKey.text())), ("apiLink", str(studentLayout.settingsApiLink.text()))])
-            studentLayout.settingsApiKeyLabel.deleteLater()
-            studentLayout.settingsApiKey.deleteLater()
-            studentLayout.settingsApiLinkLabel.deleteLater()
-            studentLayout.settingsApiLink.deleteLater()
-            studentLayout.settingsConnect.deleteLater()
+            setConfig([("apiKey", str(managerLayout.settingsApiKey.text())), ("apiLink", str(managerLayout.settingsApiLink.text()))])
+            managerLayout.settingsApiKeyLabel.deleteLater()
+            managerLayout.settingsApiKey.deleteLater()
+            managerLayout.settingsApiLinkLabel.deleteLater()
+            managerLayout.settingsApiLink.deleteLater()
+            managerLayout.settingsConnect.deleteLater()
 
         #? Connect Functions
 
         self.worker.updateData.connect(updateData)
         self.worker.disableApi.connect(disableApi)
+
+
+class TableModel(QAbstractTableModel):
+    def __init__(self, parent, header, tabledata):
+        QAbstractTableModel.__init__(self, parent)
+        self.modelTableData = tabledata
+        self.header = header
+
+        self.background_colors = dict()
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self.modelTableData)
+
+    def columnCount(self, parent=QModelIndex()):
+        return len(self.header)
+
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        if (
+            0 <= index.row() < self.rowCount()
+            and 0 <= index.column() < self.columnCount()
+        ):
+            if role == Qt.ItemDataRole.BackgroundRole:
+                return qRgb(255, 5, 0)
+            elif role == Qt.ItemDataRole.DisplayRole:
+                return self.modelTableData[index.row()][index.column()]
+
+    def setData(self, index, value, role):
+        if not index.isValid():
+            return False
+        if (
+            0 <= index.row() < self.rowCount()
+            and 0 <= index.column() < self.columnCount()
+        ):
+            if role == Qt.ItemDataRole.BackgroundRole and index.isValid():
+                ix = self.index(index.row(), 0)
+                pix = QPersistentModelIndex(ix)
+                self.background_colors[pix] = value
+                return True
+        return False
+
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+            return self.header[col]
+        return None
+
 
 class WorkerObject(QObject):
     updateData = pyqtSignal(dict)
@@ -256,7 +293,7 @@ class WorkerObject(QObject):
             def connect():
                 if debug: 
                     print("connection established")
-                self.sio.emit('getActiveClass')
+                self.sio.emit('getOwnedClasses', 'landonh')
 
             @self.sio.event
             def setClass(newClassId):
@@ -273,6 +310,9 @@ class WorkerObject(QObject):
                 except:
                     print("No class, or couldn't send update.")
                 
+            @self.sio.event
+            def getOwnedClasses(classes):
+                print({"s":classes})
 
             @self.sio.event
             def vbUpdate(data):
@@ -292,6 +332,9 @@ class WorkerObject(QObject):
             print("Couldn't connect.")
         pass
 
+    def sendTUTD(self):
+        self.sio.emit('startPoll', (3, 0, 'Thumbs?', [{'answer': 'Up', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'Wiggle', 'weight': '1.0', 'color': '#00FFFF'},{'answer': 'Down', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False))
+        self.sio.emit('cpUpdate')
 
     def voteSelected(self, voteName):
         try:
