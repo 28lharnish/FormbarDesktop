@@ -6,9 +6,9 @@ import sys, os
 import socketio
 
 debug = True
-versionNumber = "1.0.2"
+versionNumber = "1.0.3"
 try:
-    from ctypes import windll  # Only exists on Windows.
+    from ctypes import windll
     myappid = 'ljharnish.formbardesktop.' + versionNumber
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
@@ -357,6 +357,8 @@ class WorkerObject(QObject):
     def backgroundSocket(self, apikey, apilink):
         try:
             self.sio = socketio.Client()
+            self.joined = False
+
             if debug: 
                 print(apikey)
             @self.sio.event
@@ -364,20 +366,26 @@ class WorkerObject(QObject):
                 if debug: 
                     print("connection established")
                 self.sio.emit('getActiveClass')
-                self.disableApi.emit()
 
             @self.sio.event
             def setClass(newClassId):
+                print(newClassId)
                 try:
-                    if debug: 
-                        print('The user is currently in the class with the id ' + newClassId)
-                    self.sio.emit('vbUpdate')
+                    if newClassId != None:
+                        if debug: 
+                            print('The user is currently in the class with the id ' + str(newClassId))
+                        if not self.joined:
+                            self.sio.emit('joinClass', newClassId)
+                            self.disableApi.emit()
+                            self.joined = True
+                        self.sio.emit('vbUpdate')
                 except:
                     print("No class, or couldn't send update.")
-                    
+                
 
             @self.sio.event
             def vbUpdate(data):
+                print('data')
                 self.updateData.emit(data)
 
             @self.sio.event
