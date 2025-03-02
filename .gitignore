@@ -1,3 +1,5 @@
 dist/
 build/
 *.ifp
+*.bat
+*.json
