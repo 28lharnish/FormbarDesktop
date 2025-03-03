@@ -4,3 +4,7 @@ build/
 *.bat
 *.json
 __pycache__/
+PyQt6*/
+bin/
+requests/
+*/
