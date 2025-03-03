@@ -50,11 +50,21 @@ class FormbarApp(QDialog):
             apiLink = studentLayout.settingsApiLink.text()
             self.startSocketSignal.emit(apiKey, apiLink)
 
+        #def stayOnTop(checked):
+        #    print(checked)
+        #    if checked == True:
+        #        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+        #    else:
+        #        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+
+
         studentLayout.settingsConnect.clicked.connect(submitApi)
         studentLayout.helpTicketButton.clicked.connect(self.helpTicketSignal.emit)
         studentLayout.takeBreakButton.clicked.connect(self.takeBreakSignal.emit)
         studentLayout.removeVoteButton.clicked.connect(partial(self.voteSelectedSignal.emit, 'remove'))
+        #studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
 
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
         self.setLayout(studentLayout.mainLayout)
         self.setFixedSize(500, 700)
         self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")

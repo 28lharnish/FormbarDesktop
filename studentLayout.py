@@ -1,7 +1,7 @@
 
 from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
 from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont
-from PyQt6.QtWidgets import (QApplication, QAbstractItemView, QComboBox, QDialog, QStyle, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
+from PyQt6.QtWidgets import (QApplication, QAbstractItemView, QCheckBox, QComboBox, QDialog, QStyle, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
 from models import TableModel
 
 class StudentLayout:
@@ -97,6 +97,9 @@ class StudentLayout:
         self.themeDropdown.setFixedHeight(40)
         self.themeDropdown.setCursor(Qt.CursorShape.PointingHandCursor)
 
+        #self.stayOnTopCheckLabel = QLabel("Keep window on top?")
+        #self.stayOnTopCheck = QCheckBox()
+
         self.settingsApiKeyLabel = QLabel("Your Api Key:")
         self.settingsApiKey = QLineEdit("")
         self.settingsApiKey.setFixedHeight(40)
@@ -111,6 +114,8 @@ class StudentLayout:
         self.settingsConnect.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.settingslayout = QVBoxLayout()
+        #self.settingslayout.addWidget(self.stayOnTopCheckLabel)
+        #self.settingslayout.addWidget(self.stayOnTopCheck)
         self.settingslayout.addWidget(self.themeDropdownLabel)
         self.settingslayout.addWidget(self.themeDropdown)
         self.settingslayout.addWidget(self.settingsApiKeyLabel)
