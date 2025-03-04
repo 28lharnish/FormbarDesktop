@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
-from PyQt6.QtGui import qRgb, QIcon, QPalette
+from PyQt6.QtGui import qRgb, qRgba, QIcon, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTabWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
 import sys, os
@@ -24,14 +24,12 @@ class FormbarApp(QDialog):
     startSocketSignal = pyqtSignal(str, str)
     helpTicketSignal = pyqtSignal()
     takeBreakSignal = pyqtSignal()
-    allowAllVotingS = pyqtSignal(bool)
+    allowAllVotingS = pyqtSignal()
     voteSelectedSignal = pyqtSignal(str)
     sendPollSignalTUTD = pyqtSignal()
 
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
-
-        self.allowAllVoting = False
 
         #? Themes
         lightpalette = QApplication.palette()
@@ -81,7 +79,7 @@ class FormbarApp(QDialog):
         self.helpTicketSignal.connect(self.worker.helpTicket)
         self.takeBreakSignal.connect(self.worker.takeBreak)
         self.voteSelectedSignal.connect(self.worker.voteSelected)
-        self.allowAllVotingS.connect(self.worker.getVotingStyle)
+        self.allowAllVotingS.connect(self.worker.allowAllVote)
         self.sendPollSignalTUTD.connect(self.worker.sendTUTD)
         self.thread.start()
         
@@ -95,9 +93,8 @@ class FormbarApp(QDialog):
             apiLink = managerLayout.settingsApiLink.text()
             self.startSocketSignal.emit(apiKey, apiLink)
 
-        def changeVoting(b):
-            self.allowAllVoting = b
-            self.allowAllVotingS.emit(b)
+        def changeVoting():
+            self.allowAllVotingS.emit()
 
         managerLayout.allowAllVotes.clicked.connect(changeVoting)
         managerLayout.settingsConnect.clicked.connect(submitApi)
@@ -117,6 +114,11 @@ class FormbarApp(QDialog):
 
         tabs = QTabWidget()
         tabs.addTab(formPage, "Active Form")
+        tabs.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        #tabs.setStyleSheet('background: rgba(0,0,0, 0)')
+        tabPalette = tabs.palette()
+        #tabPalette.setColor(tabPalette.ColorRole.Base, qRgba(0, 0, 0, 2))
+        tabs.setPalette(tabPalette)
 
         layout = QHBoxLayout()
         layout.addWidget(tabs)
@@ -292,8 +294,11 @@ class WorkerObject(QObject):
     disableApi = pyqtSignal()
     pyqtSlot()
     def backgroundSocket(self, apikey, apilink):
+        self.tempStudents = {}
+        self.tempStudentKeys = []
         self.studentsInClass = []
         self.studentsInClassByName = []
+        self.lastPoll = {}
         self.allowAllVotes = False
 
         try:
@@ -335,16 +340,16 @@ class WorkerObject(QObject):
 
             @self.sio.event
             def cpUpdate(classroom):
-                tempStudents = classroom['students']
-                tempStudentKeys = list(dict(classroom['students']).keys())
+                print(classroom)
+                self.tempStudents = classroom['students']
+                self.tempStudentKeys = list(dict(classroom['students']).keys())
                 self.studentsInClass = []
                 self.studentsInClassByName = []
-                for student in range(0, len(tempStudentKeys)):
-                    if tempStudents[tempStudentKeys[student]]['API'] != apikey:
-                        self.studentsInClass.append(tempStudents[tempStudentKeys[student]])
-                        self.studentsInClassByName.append(tempStudents[tempStudentKeys[student]]["username"])
-                        if self.allowAllVotes:
-                            self.sio.emit('votingRightChange', (tempStudents[tempStudentKeys[student]]["username"], True, self.studentsInClassByName))
+                #if self.lastPoll['id'] == cassroom
+                for student in range(0, len(self.tempStudentKeys)):
+                    if self.tempStudents[self.tempStudentKeys[student]]['API'] != apikey:
+                        self.studentsInClass.append(self.tempStudents[self.tempStudentKeys[student]])
+                        self.studentsInClassByName.append(self.tempStudents[self.tempStudentKeys[student]]["username"])
 
             @self.sio.event
             def vbUpdate(data):
@@ -364,8 +369,9 @@ class WorkerObject(QObject):
             print("Couldn't connect.")
         pass
 
-    def getVotingStyle(self, boola):
-        self.allowAllVotes = boola
+    def allowAllVote(self):
+        for student in range(0, len(self.tempStudentKeys)):             
+            self.sio.emit('votingRightChange', (self.tempStudents[self.tempStudentKeys[student]]["username"], True, self.studentsInClassByName))
 
     def sendTUTD(self):
         self.sio.emit('startPoll', (3, 0, 'Thumbs?', [{'answer': 'Up', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'Wiggle', 'weight': '1.0', 'color': '#00FFFF'},{'answer': 'Down', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False))

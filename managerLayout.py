@@ -46,8 +46,7 @@ class ManagerLayout:
         self.themeDropdown = QComboBox()
         self.themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
 
-        self.allowAllVotesLabel = QLabel("Allow All Votes:")
-        self.allowAllVotes = QCheckBox()
+        self.allowAllVotes = QPushButton("Allow All Votes:")
 
         self.settingsApiKeyLabel = QLabel("Your Api Key:")
         self.settingsApiKey = QLineEdit("")
@@ -63,7 +62,6 @@ class ManagerLayout:
         self.settingslayout = QVBoxLayout()
         self.settingslayout.addWidget(self.themeDropdownLabel)
         self.settingslayout.addWidget(self.themeDropdown)
-        self.settingslayout.addWidget(self.allowAllVotesLabel)
         self.settingslayout.addWidget(self.allowAllVotes)
         self.settingslayout.addWidget(self.settingsApiKeyLabel)
         self.settingslayout.addWidget(self.settingsApiKey)
