@@ -24,11 +24,14 @@ class FormbarApp(QDialog):
     startSocketSignal = pyqtSignal(str, str)
     helpTicketSignal = pyqtSignal()
     takeBreakSignal = pyqtSignal()
+    allowAllVotingS = pyqtSignal(bool)
     voteSelectedSignal = pyqtSignal(str)
     sendPollSignalTUTD = pyqtSignal()
 
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
+
+        self.allowAllVoting = False
 
         #? Themes
         lightpalette = QApplication.palette()
@@ -78,6 +81,7 @@ class FormbarApp(QDialog):
         self.helpTicketSignal.connect(self.worker.helpTicket)
         self.takeBreakSignal.connect(self.worker.takeBreak)
         self.voteSelectedSignal.connect(self.worker.voteSelected)
+        self.allowAllVotingS.connect(self.worker.getVotingStyle)
         self.sendPollSignalTUTD.connect(self.worker.sendTUTD)
         self.thread.start()
         
@@ -91,6 +95,11 @@ class FormbarApp(QDialog):
             apiLink = managerLayout.settingsApiLink.text()
             self.startSocketSignal.emit(apiKey, apiLink)
 
+        def changeVoting(b):
+            self.allowAllVoting = b
+            self.allowAllVotingS.emit(b)
+
+        managerLayout.allowAllVotes.clicked.connect(changeVoting)
         managerLayout.settingsConnect.clicked.connect(submitApi)
 
         formPage = QWidget()
@@ -283,6 +292,10 @@ class WorkerObject(QObject):
     disableApi = pyqtSignal()
     pyqtSlot()
     def backgroundSocket(self, apikey, apilink):
+        self.studentsInClass = []
+        self.studentsInClassByName = []
+        self.allowAllVotes = False
+
         try:
             self.sio = socketio.Client()
             self.joined = False
@@ -294,6 +307,8 @@ class WorkerObject(QObject):
                 if debug: 
                     print("connection established")
                 self.sio.emit('getOwnedClasses', 'landonh')
+                self.sio.emit('getActiveClass')
+                self.sio.emit('cpUpdate')
 
             @self.sio.event
             def setClass(newClassId):
@@ -307,12 +322,29 @@ class WorkerObject(QObject):
                             self.disableApi.emit()
                             self.joined = True
                         self.sio.emit('vbUpdate')
+                    else:
+                        print("No class.")
                 except:
                     print("No class, or couldn't send update.")
                 
             @self.sio.event
             def getOwnedClasses(classes):
-                print({"s":classes})
+                return
+                #print(classes)
+                #print('here')
+
+            @self.sio.event
+            def cpUpdate(classroom):
+                tempStudents = classroom['students']
+                tempStudentKeys = list(dict(classroom['students']).keys())
+                self.studentsInClass = []
+                self.studentsInClassByName = []
+                for student in range(0, len(tempStudentKeys)):
+                    if tempStudents[tempStudentKeys[student]]['API'] != apikey:
+                        self.studentsInClass.append(tempStudents[tempStudentKeys[student]])
+                        self.studentsInClassByName.append(tempStudents[tempStudentKeys[student]]["username"])
+                        if self.allowAllVotes:
+                            self.sio.emit('votingRightChange', (tempStudents[tempStudentKeys[student]]["username"], True, self.studentsInClassByName))
 
             @self.sio.event
             def vbUpdate(data):
@@ -331,6 +363,9 @@ class WorkerObject(QObject):
         except:
             print("Couldn't connect.")
         pass
+
+    def getVotingStyle(self, boola):
+        self.allowAllVotes = boola
 
     def sendTUTD(self):
         self.sio.emit('startPoll', (3, 0, 'Thumbs?', [{'answer': 'Up', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'Wiggle', 'weight': '1.0', 'color': '#00FFFF'},{'answer': 'Down', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False))
@@ -356,6 +391,7 @@ class WorkerObject(QObject):
 
 
 if __name__ == "__main__":
+
 
     import sys
 

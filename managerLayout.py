@@ -1,7 +1,7 @@
 
 from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
 from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont
-from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
+from PyQt6.QtWidgets import (QApplication, QComboBox, QCheckBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory)
 from models import TableModel
 
 class ManagerLayout:
@@ -46,6 +46,9 @@ class ManagerLayout:
         self.themeDropdown = QComboBox()
         self.themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
 
+        self.allowAllVotesLabel = QLabel("Allow All Votes:")
+        self.allowAllVotes = QCheckBox()
+
         self.settingsApiKeyLabel = QLabel("Your Api Key:")
         self.settingsApiKey = QLineEdit("")
         self.settingsApiKey.setEchoMode(QLineEdit.EchoMode.Password)
@@ -60,6 +63,8 @@ class ManagerLayout:
         self.settingslayout = QVBoxLayout()
         self.settingslayout.addWidget(self.themeDropdownLabel)
         self.settingslayout.addWidget(self.themeDropdown)
+        self.settingslayout.addWidget(self.allowAllVotesLabel)
+        self.settingslayout.addWidget(self.allowAllVotes)
         self.settingslayout.addWidget(self.settingsApiKeyLabel)
         self.settingslayout.addWidget(self.settingsApiKey)
         self.settingslayout.addWidget(self.settingsApiLinkLabel)
