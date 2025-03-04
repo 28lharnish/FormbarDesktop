@@ -2,6 +2,7 @@ from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, 
 from PyQt6.QtGui import qRgb, qRgba, QIcon, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTabWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
+from themes import Themes
 import sys, os
 import socketio
 import json
@@ -26,52 +27,12 @@ class FormbarApp(QDialog):
     takeBreakSignal = pyqtSignal()
     allowAllVotingS = pyqtSignal()
     voteSelectedSignal = pyqtSignal(str)
-    sendPollSignalTUTD = pyqtSignal()
+    sendPollSignal = pyqtSignal(tuple)
 
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
 
-        #? Themes
-        lightpalette = QApplication.palette()
-        lightpalette.setColor(lightpalette.ColorRole.Window, qRgb(110, 110, 110))
-        lightpalette.setColor(lightpalette.ColorRole.WindowText, qRgb(255, 255, 255))
-        lightpalette.setColor(lightpalette.ColorRole.Base, qRgb(150, 150, 150))
-        lightpalette.setColor(lightpalette.ColorRole.AlternateBase, qRgb(120, 120, 120))
-        lightpalette.setColor(lightpalette.ColorRole.Accent, qRgb(255, 0, 0))
-        lightpalette.setColor(lightpalette.ColorRole.Text, qRgb(255, 255, 255))
-        lightpalette.setColor(lightpalette.ColorRole.Button, qRgb(120, 120, 120))
-        lightpalette.setColor(lightpalette.ColorRole.ButtonText, qRgb(255, 255, 255))
-
-        darkpalette = QApplication.palette()
-        darkpalette.setColor(darkpalette.ColorRole.Window, qRgb(34, 34, 34))
-        darkpalette.setColor(darkpalette.ColorRole.WindowText, qRgb(255, 255, 255))
-        darkpalette.setColor(darkpalette.ColorRole.Base, qRgb(15, 15, 15))
-        darkpalette.setColor(darkpalette.ColorRole.AlternateBase, qRgb(41, 44, 51))
-        darkpalette.setColor(darkpalette.ColorRole.Accent, qRgb(255, 0, 0))
-        darkpalette.setColor(darkpalette.ColorRole.Text, qRgb(255, 255, 255))
-        darkpalette.setColor(darkpalette.ColorRole.Button, qRgb(41, 44, 51))
-        darkpalette.setColor(darkpalette.ColorRole.ButtonText, qRgb(255, 255, 255))
-        
-        redPalette = QApplication.palette()
-        redPalette.setColor(redPalette.ColorRole.Window, qRgb(133, 0, 7))
-        redPalette.setColor(redPalette.ColorRole.WindowText, qRgb(255, 173, 178))
-        redPalette.setColor(redPalette.ColorRole.Base, qRgb(56, 0, 3))
-        redPalette.setColor(redPalette.ColorRole.AlternateBase, qRgb(36, 0, 2))
-        redPalette.setColor(redPalette.ColorRole.Accent, qRgb(255, 0, 0))
-        redPalette.setColor(redPalette.ColorRole.Text, qRgb(255, 173, 178))
-        redPalette.setColor(redPalette.ColorRole.Button, qRgb(56, 0, 3))
-        redPalette.setColor(redPalette.ColorRole.ButtonText, qRgb(255, 173, 178))
-
-        bluePalette = QApplication.palette()
-        bluePalette.setColor(bluePalette.ColorRole.Window, qRgb(0, 70, 140))
-        bluePalette.setColor(bluePalette.ColorRole.WindowText, qRgb(171, 213, 255))
-        bluePalette.setColor(bluePalette.ColorRole.Base, qRgb(0, 27, 54))
-        bluePalette.setColor(bluePalette.ColorRole.AlternateBase, qRgb(0, 18, 36))
-        bluePalette.setColor(bluePalette.ColorRole.Accent, qRgb(0, 0, 255))
-        bluePalette.setColor(bluePalette.ColorRole.Text, qRgb(171, 213, 255))
-        bluePalette.setColor(bluePalette.ColorRole.Button, qRgb(0, 27, 54))
-        bluePalette.setColor(bluePalette.ColorRole.ButtonText, qRgb(171, 213, 255))
-
+        themes = Themes()
         self.worker = WorkerObject()
         self.thread = QThread()
         self.worker.moveToThread(self.thread)
@@ -80,7 +41,7 @@ class FormbarApp(QDialog):
         self.takeBreakSignal.connect(self.worker.takeBreak)
         self.voteSelectedSignal.connect(self.worker.voteSelected)
         self.allowAllVotingS.connect(self.worker.allowAllVote)
-        self.sendPollSignalTUTD.connect(self.worker.sendTUTD)
+        self.sendPollSignal.connect(self.worker.sendPoll)
         self.thread.start()
         
         def getLayout():
@@ -99,40 +60,25 @@ class FormbarApp(QDialog):
         managerLayout.allowAllVotes.clicked.connect(changeVoting)
         managerLayout.settingsConnect.clicked.connect(submitApi)
 
-        formPage = QWidget()
-        formPageLayout = QHBoxLayout()
-        formPageStudentView = QWidget()
-        formPageStudentView.setLayout(managerLayout.votingShownLayout)
-        formPageStudentView.setFixedWidth(500)
-
-        formPageManagerView = QWidget()
-        formPageManagerView.setLayout(managerLayout.managerFormLayout)
-        managerLayout.fastPollTUTD.clicked.connect(self.sendPollSignalTUTD.emit)
-        formPageLayout.addWidget(formPageStudentView, 0, Qt.AlignmentFlag.AlignLeft)
-        formPageLayout.addWidget(formPageManagerView)
-        formPage.setLayout(formPageLayout)
-
-        tabs = QTabWidget()
-        tabs.addTab(formPage, "Active Form")
-        tabs.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        #tabs.setStyleSheet('background: rgba(0,0,0, 0)')
-        tabPalette = tabs.palette()
-        #tabPalette.setColor(tabPalette.ColorRole.Base, qRgba(0, 0, 0, 2))
-        tabs.setPalette(tabPalette)
+        managerLayout.fastPollTUTD.clicked.connect(partial(self.sendPollSignal.emit, (3, 0, 'Thumbs?', [{'answer': 'Up', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'Wiggle', 'weight': '1.0', 'color': '#00FFFF'},{'answer': 'Down', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False)))
+        managerLayout.fastPollTrueFalse.clicked.connect(partial(self.sendPollSignal.emit, (2, 0, 'True or False', [{'answer': 'True', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'False', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False)))
+        managerLayout.fastPollDoneReady.clicked.connect(partial(self.sendPollSignal.emit, (1, 0, 'Thumbs?', [{'answer': 'Yes', 'weight': '1.0', 'color': '#00FF00'}], False, 1, [], [], [], [], False)))
+        managerLayout.fastPollMultiChoi.clicked.connect(partial(self.sendPollSignal.emit, (4, 0, 'Multiple Choice', [{'answer': 'A', 'weight': '1.0', 'color': '#FF0000'},{'answer': 'B', 'weight': '1.0', 'color': '#0000FF'},{'answer': 'C', 'weight': '1.0', 'color': '#FFFF00'},{'answer': 'D', 'weight': '1.0', 'color': '#00FF00'},], False, 1, [], [], [], [], False)))
 
         layout = QHBoxLayout()
-        layout.addWidget(tabs)
+        layout.addWidget(managerLayout.fullPage)
 
-        self.setLayout(layout)
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+        self.setLayout(managerLayout.fullPageLayout)
         self.setFixedSize(1200, 700)
         self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), '/icons/icon.ico')))
-        QApplication.setPalette(lightpalette)
+        QApplication.setPalette(themes.lightpalette)
 
 
-        #? Load configs
+        #? Load configsP
         
         def setConfig(keys):
             configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'r')
@@ -151,13 +97,13 @@ class FormbarApp(QDialog):
             managerLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
-                    QApplication.setPalette(lightpalette)
+                    QApplication.setPalette(themes.lightpalette)
                 case 1:
-                    QApplication.setPalette(darkpalette)
+                    QApplication.setPalette(themes.darkpalette)
                 case 2:
-                    QApplication.setPalette(redPalette)
+                    QApplication.setPalette(themes.redPalette)
                 case 3:
-                    QApplication.setPalette(bluePalette)
+                    QApplication.setPalette(themes.bluePalette)
 
         try:
             configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'r')
@@ -242,53 +188,6 @@ class FormbarApp(QDialog):
         self.worker.updateData.connect(updateData)
         self.worker.disableApi.connect(disableApi)
 
-
-class TableModel(QAbstractTableModel):
-    def __init__(self, parent, header, tabledata):
-        QAbstractTableModel.__init__(self, parent)
-        self.modelTableData = tabledata
-        self.header = header
-
-        self.background_colors = dict()
-
-    def rowCount(self, parent=QModelIndex()):
-        return len(self.modelTableData)
-
-    def columnCount(self, parent=QModelIndex()):
-        return len(self.header)
-
-    def data(self, index, role):
-        if not index.isValid():
-            return None
-        if (
-            0 <= index.row() < self.rowCount()
-            and 0 <= index.column() < self.columnCount()
-        ):
-            if role == Qt.ItemDataRole.BackgroundRole:
-                return qRgb(255, 5, 0)
-            elif role == Qt.ItemDataRole.DisplayRole:
-                return self.modelTableData[index.row()][index.column()]
-
-    def setData(self, index, value, role):
-        if not index.isValid():
-            return False
-        if (
-            0 <= index.row() < self.rowCount()
-            and 0 <= index.column() < self.columnCount()
-        ):
-            if role == Qt.ItemDataRole.BackgroundRole and index.isValid():
-                ix = self.index(index.row(), 0)
-                pix = QPersistentModelIndex(ix)
-                self.background_colors[pix] = value
-                return True
-        return False
-
-    def headerData(self, col, orientation, role):
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
-            return self.header[col]
-        return None
-
-
 class WorkerObject(QObject):
     updateData = pyqtSignal(dict)
     disableApi = pyqtSignal()
@@ -345,7 +244,6 @@ class WorkerObject(QObject):
                 self.tempStudentKeys = list(dict(classroom['students']).keys())
                 self.studentsInClass = []
                 self.studentsInClassByName = []
-                #if self.lastPoll['id'] == cassroom
                 for student in range(0, len(self.tempStudentKeys)):
                     if self.tempStudents[self.tempStudentKeys[student]]['API'] != apikey:
                         self.studentsInClass.append(self.tempStudents[self.tempStudentKeys[student]])
@@ -373,9 +271,12 @@ class WorkerObject(QObject):
         for student in range(0, len(self.tempStudentKeys)):             
             self.sio.emit('votingRightChange', (self.tempStudents[self.tempStudentKeys[student]]["username"], True, self.studentsInClassByName))
 
-    def sendTUTD(self):
-        self.sio.emit('startPoll', (3, 0, 'Thumbs?', [{'answer': 'Up', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'Wiggle', 'weight': '1.0', 'color': '#00FFFF'},{'answer': 'Down', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False))
-        self.sio.emit('cpUpdate')
+    def sendPoll(self, customPoll):
+        try:
+            self.sio.emit('startPoll', customPoll)
+            self.sio.emit('cpUpdate')
+        except:
+            print("No socket yet.")
 
     def voteSelected(self, voteName):
         try:

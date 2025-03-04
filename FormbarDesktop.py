@@ -100,8 +100,6 @@ class FormbarApp(QDialog):
                     QApplication.setPalette(themes.redPalette)
                 case 3:
                     QApplication.setPalette(themes.bluePalette)
-                #case 4:
-                #    QApplication.setPalette(themes.pinkGradient)
 
         try:
             configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
