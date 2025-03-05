@@ -2,12 +2,35 @@
 
 A desktop client for the app [Formbar](https://github.com/csmith1188/).
 
-### How to Use:
-1. Unpack the zip to a safe location.
+## How to Use Student Panel:
+1. Unpack the zip to a safe location
 2. Open "Formbar Desktop.exe"
 3. Input API key (found at `/apikey`)
-4. (Optional) If a developer, input your API's link.
-5. Click "Connect".
+4. (Optional) If a developer, input your API's link
+5. Click "Connect"
+
+*These next steps will be required on the official Formbar until Formbar itself is fixed.*
+
+6. Refresh the `/student` page on the Web version,
+7. Rejoin your class
+8. Your client should work correctly now.
+
+---
+
+## How to Use Manager Panel:
+1. Unpack the zip to a safe location
+2. Open "Formbar Desktop Manager.exe"
+3. Input API key (found at `/apikey`)
+4. (Optional) If a developer, input your API's link
+5. Click "Connect"
+
+*These next steps will be required on the official Formbar until Formbar itself is fixed.*
+
+7. Click the `Change Class` button on the Web Manager Panel
+8. Rejoin your class
+9. Your client should work correctly now.
+
+---
 
 ### Features
 - Poll Support
