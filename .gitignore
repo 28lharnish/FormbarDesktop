@@ -8,3 +8,4 @@ PyQt6*/
 bin/
 requests/
 */
+*.zip
