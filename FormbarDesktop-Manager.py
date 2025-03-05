@@ -3,6 +3,7 @@ from PyQt6.QtGui import qRgb, qRgba, QIcon, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTabWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
 from themes import Themes
+import time
 import sys, os
 import socketio
 import json
@@ -28,6 +29,7 @@ class FormbarApp(QDialog):
     allowAllVotingS = pyqtSignal()
     voteSelectedSignal = pyqtSignal(str)
     sendPollSignal = pyqtSignal(tuple)
+    switchAutoAllow = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
@@ -42,6 +44,7 @@ class FormbarApp(QDialog):
         self.voteSelectedSignal.connect(self.worker.voteSelected)
         self.allowAllVotingS.connect(self.worker.allowAllVote)
         self.sendPollSignal.connect(self.worker.sendPoll)
+        self.switchAutoAllow.connect(self.worker.switchAutoAllow)
         self.thread.start()
         
         def getLayout():
@@ -57,13 +60,14 @@ class FormbarApp(QDialog):
         def changeVoting():
             self.allowAllVotingS.emit()
 
-        managerLayout.allowAllVotes.clicked.connect(changeVoting)
+        managerLayout.fastPollAllowAllVotes.clicked.connect(changeVoting)
         managerLayout.settingsConnect.clicked.connect(submitApi)
 
         managerLayout.fastPollTUTD.clicked.connect(partial(self.sendPollSignal.emit, (3, 0, 'Thumbs?', [{'answer': 'Up', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'Wiggle', 'weight': '1.0', 'color': '#00FFFF'},{'answer': 'Down', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False)))
         managerLayout.fastPollTrueFalse.clicked.connect(partial(self.sendPollSignal.emit, (2, 0, 'True or False', [{'answer': 'True', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'False', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False)))
         managerLayout.fastPollDoneReady.clicked.connect(partial(self.sendPollSignal.emit, (1, 0, 'Thumbs?', [{'answer': 'Yes', 'weight': '1.0', 'color': '#00FF00'}], False, 1, [], [], [], [], False)))
         managerLayout.fastPollMultiChoi.clicked.connect(partial(self.sendPollSignal.emit, (4, 0, 'Multiple Choice', [{'answer': 'A', 'weight': '1.0', 'color': '#FF0000'},{'answer': 'B', 'weight': '1.0', 'color': '#0000FF'},{'answer': 'C', 'weight': '1.0', 'color': '#FFFF00'},{'answer': 'D', 'weight': '1.0', 'color': '#00FF00'},], False, 1, [], [], [], [], False)))
+        managerLayout.fastPollAutoAllowAll.clicked.connect(self.switchAutoAllow.emit)
 
         layout = QHBoxLayout()
         layout.addWidget(managerLayout.fullPage)
@@ -183,14 +187,31 @@ class FormbarApp(QDialog):
             managerLayout.settingsApiLink.deleteLater()
             managerLayout.settingsConnect.deleteLater()
 
+        def createStudents(students, studentsList):
+            managerLayout.studentTabLayout.addStretch()
+            for student in studentsList:
+                newStudentButton = QPushButton(student)
+                managerLayout.studentTabLayout.addWidget(newStudentButton)
+            managerLayout.studentTabLayout.addStretch()
+
+        def resetStudents():
+            while managerLayout.studentTabLayout.count():
+                child = managerLayout.studentTabLayout.takeAt(0)
+                if child.widget():
+                    child.widget().deleteLater()
+
         #? Connect Functions
 
         self.worker.updateData.connect(updateData)
+        self.worker.resetStudents.connect(resetStudents)
+        self.worker.createStudents.connect(createStudents)
         self.worker.disableApi.connect(disableApi)
 
 class WorkerObject(QObject):
     updateData = pyqtSignal(dict)
     disableApi = pyqtSignal()
+    resetStudents = pyqtSignal()
+    createStudents = pyqtSignal(dict, list)
     pyqtSlot()
     def backgroundSocket(self, apikey, apilink):
         self.tempStudents = {}
@@ -198,7 +219,7 @@ class WorkerObject(QObject):
         self.studentsInClass = []
         self.studentsInClassByName = []
         self.lastPoll = {}
-        self.allowAllVotes = False
+        self.autoAllowAll = False
 
         try:
             self.sio = socketio.Client()
@@ -239,7 +260,7 @@ class WorkerObject(QObject):
 
             @self.sio.event
             def cpUpdate(classroom):
-                print(classroom)
+                #print(classroom)
                 self.tempStudents = classroom['students']
                 self.tempStudentKeys = list(dict(classroom['students']).keys())
                 self.studentsInClass = []
@@ -248,6 +269,8 @@ class WorkerObject(QObject):
                     if self.tempStudents[self.tempStudentKeys[student]]['API'] != apikey:
                         self.studentsInClass.append(self.tempStudents[self.tempStudentKeys[student]])
                         self.studentsInClassByName.append(self.tempStudents[self.tempStudentKeys[student]]["username"])
+                self.resetStudents.emit()
+                self.createStudents.emit(self.tempStudents, self.studentsInClassByName)
 
             @self.sio.event
             def vbUpdate(data):
@@ -267,6 +290,10 @@ class WorkerObject(QObject):
             print("Couldn't connect.")
         pass
 
+    def switchAutoAllow(self, allow):
+        print(allow)
+        self.autoAllowAll = allow
+
     def allowAllVote(self):
         for student in range(0, len(self.tempStudentKeys)):             
             self.sio.emit('votingRightChange', (self.tempStudents[self.tempStudentKeys[student]]["username"], True, self.studentsInClassByName))
@@ -275,6 +302,9 @@ class WorkerObject(QObject):
         try:
             self.sio.emit('startPoll', customPoll)
             self.sio.emit('cpUpdate')
+            if self.autoAllowAll:
+                time.sleep(0.2) #! Fixes issue allowing at the same time as creating poll
+                self.allowAllVote()
         except:
             print("No socket yet.")
 
