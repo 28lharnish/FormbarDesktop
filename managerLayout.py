@@ -24,7 +24,7 @@ class ManagerLayout:
         self.tabs = QTabWidget()
         self.tabs.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.tabs.addTab(self.fastPollW, "Fast Poll")
-        self.tabs.addTab(self.customPollW, "Custom Form")
+        #self.tabs.addTab(self.customPollW, "Custom Form")
         self.tabs.setDocumentMode(True)
         
         self.fullPage = QWidget()

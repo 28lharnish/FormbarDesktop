@@ -12,11 +12,11 @@ from models import *
 from managerLayout import ManagerLayout
 
 debug = True
-versionNumber = "1.0.0b"
+versionNumber = "1.0.0"
 
 try:
     from ctypes import windll
-    myappid = 'ljharnish.formbardesktop.' + versionNumber
+    myappid = 'ljharnish.formbardesktopmanager.' + versionNumber
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass

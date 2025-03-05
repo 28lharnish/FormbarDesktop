@@ -12,7 +12,7 @@ from studentLayout import StudentLayout
 from themes import Themes
 
 debug = True
-versionNumber = "1.0.4b"
+versionNumber = "1.0.4"
 
 try:
     from ctypes import windll
