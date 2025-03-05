@@ -74,7 +74,7 @@ class FormbarApp(QDialog):
         self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
-        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), '/icons/icon.ico')))
+        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
         QApplication.setPalette(themes.lightpalette)
 
 
