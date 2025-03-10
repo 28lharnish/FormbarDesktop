@@ -1,5 +1,5 @@
 from datetime import datetime
-#!               RED        GREEN       BLUE        RESET
+#!        RED        GREEN       BLUE        RESET
 col = ['\033[91m', '\033[92m', '\033[94m', '\033[0m']
 
 class custLogging:
