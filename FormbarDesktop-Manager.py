@@ -3,6 +3,7 @@ from PyQt6.QtGui import qRgb, qRgba, QIcon, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTabWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
 from themes import Themes
+from custLogging import custLogging
 import time
 import sys, os
 import socketio
@@ -21,6 +22,8 @@ try:
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
+
+Logger = custLogging().log
 
 class FormbarApp(QDialog):
     startSocketSignal = pyqtSignal(str, str)
@@ -123,7 +126,7 @@ class FormbarApp(QDialog):
 
             configJSON.close()
         except:
-            print("No Config JSON, creating one now.")
+            Logger('ConfigJSON', "No Config JSON, creating one now.")
             configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'w')
             json.dump({"fdTheme": "0"}, configJSON)
             configJSON.close()
@@ -137,14 +140,10 @@ class FormbarApp(QDialog):
         self.voteOptions = []
         
         def updateData(data):
-            if debug: 
-                print(data)
             self.voteOptions = []
             self.currentData = data
             for option in data["polls"]:
                 self.voteOptions.append(data["polls"][option])
-                if debug: 
-                    print(self.voteOptions)
 
             updatePrompt()
             updateVotes()
@@ -226,31 +225,27 @@ class WorkerObject(QObject):
             self.joined = False
 
             if debug: 
-                print(apikey)
+                Logger('APIKey', apikey)
             @self.sio.event
             def connect():
                 if debug: 
-                    print("connection established")
+                    Logger("SocketConnect", "Connected.")
                 self.sio.emit('getOwnedClasses', 'landonh')
                 self.sio.emit('getActiveClass')
                 self.sio.emit('cpUpdate')
 
             @self.sio.event
             def setClass(newClassId):
-                print(newClassId)
                 try:
                     if newClassId != None:
-                        if debug: 
-                            print('The user is currently in the class with the id ' + str(newClassId))
+                        Logger("SetClass", 'User in class: ' + str(newClassId))
                         if not self.joined:
                             self.sio.emit('joinClass', newClassId)
                             self.disableApi.emit()
                             self.joined = True
                         self.sio.emit('vbUpdate')
-                    else:
-                        print("No class.")
                 except:
-                    print("No class, or couldn't send update.")
+                    Logger("SetClass", "ERR: No Class / Update Failed to Send")
                 
             @self.sio.event
             def getOwnedClasses(classes):
@@ -274,24 +269,23 @@ class WorkerObject(QObject):
 
             @self.sio.event
             def vbUpdate(data):
-                print('data')
+                Logger("VirtualBarUpdate", data)
                 self.updateData.emit(data)
 
             @self.sio.event
             def disconnect():
                 if debug:
-                    print("disconnected from server")
+                    Logger("SocketConnect", "Disconnected")
 
             if not apilink:
                 apilink = 'https://formbeta.yorktechapps.com/'
-            print(apilink)
             self.sio.connect(apilink, { "api": apikey })
         except:
-            print("Couldn't connect.")
+            Logger("SocketConnect", "Couldn't connect.")
         pass
 
     def switchAutoAllow(self, allow):
-        print(allow)
+        Logger("AutoAllow", allow)
         self.autoAllowAll = allow
 
     def allowAllVote(self):
@@ -306,7 +300,7 @@ class WorkerObject(QObject):
                 time.sleep(0.2) #! Fixes issue allowing at the same time as creating poll
                 self.allowAllVote()
         except:
-            print("No socket yet.")
+            Logger("SendPoll", "ERR: No socket yet.")
 
     def voteSelected(self, voteName):
         try:
