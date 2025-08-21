@@ -21,9 +21,6 @@ A desktop client for the app [Formbar](https://github.com/csmith1188/).
 
 ## Screenshots
 ### Themes:
-- Light Theme:
-
-    - ![Screenshot 2025-03-04 211851](https://github.com/user-attachments/assets/c3687afd-6923-438d-913a-5f2b2c59772d)
 - Dark Theme:
     - ![Screenshot 2025-03-04 211901](https://github.com/user-attachments/assets/9ce0e669-126a-4a90-89c9-ba52bbf78768)
 - Red Theme:

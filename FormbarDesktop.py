@@ -14,7 +14,7 @@ from studentLayout import StudentLayout
 from themes import Themes
 
 debug = True
-versionNumber = "1.0.4"
+versionNumber = "1.0.5-dev"
 
 try:
     from ctypes import windll
@@ -54,28 +54,36 @@ class FormbarApp(QDialog):
             apiLink = studentLayout.settingsApiLink.text()
             self.startSocketSignal.emit(apiKey, apiLink)
 
-        #def stayOnTop(checked):
-        #    print(checked)
-        #    if checked == True:
-        #        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
-        #    else:
-        #        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+        def stayOnTop(checked):
+            setConfig([("fdStayOnTop", checked)])
+            if checked == True:
+                self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+                self.show()
+                self.activateWindow()
+                print("Stay on top.")
+                return
+            else:
+                self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, False)
+                self.show()
+                self.activateWindow()
+                print("Stay off top.")
+                return
 
 
         studentLayout.settingsConnect.clicked.connect(submitApi)
         studentLayout.helpTicketButton.clicked.connect(self.helpTicketSignal.emit)
         studentLayout.takeBreakButton.clicked.connect(self.takeBreakSignal.emit)
         studentLayout.removeVoteButton.clicked.connect(partial(self.voteSelectedSignal.emit, 'remove'))
-        #studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
+        studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
 
-        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.WindowType.Window)
         self.setLayout(studentLayout.mainLayout)
-        self.setFixedSize(500, 700)
+        self.setMinimumSize(500, 700)
         self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
-        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
-        QApplication.setPalette(themes.lightpalette)
+        QApplication.setPalette(themes.darkpalette)
 
 
         #? Load configs
@@ -97,13 +105,13 @@ class FormbarApp(QDialog):
             studentLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
-                    QApplication.setPalette(themes.lightpalette)
-                case 1:
                     QApplication.setPalette(themes.darkpalette)
-                case 2:
+                case 1:
                     QApplication.setPalette(themes.redPalette)
-                case 3:
+                case 2:
                     QApplication.setPalette(themes.bluePalette)
+                case 3:
+                    QApplication.setPalette(themes.pinkGradient)
 
         try:
             configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
@@ -116,6 +124,10 @@ class FormbarApp(QDialog):
 
             if "fdTheme" in configData:
                 setTheme(configData["fdTheme"])
+
+            if "fdStayOnTop" in configData:
+                stayOnTop(configData["fdStayOnTop"])
+                studentLayout.stayOnTopCheck.setChecked(configData["fdStayOnTop"])
 
             configJSON.close()
         except:

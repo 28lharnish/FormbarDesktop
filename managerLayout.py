@@ -135,7 +135,7 @@ class ManagerLayout:
 
         self.themeDropdownLabel = QLabel("Theme:")
         self.themeDropdown = QComboBox()
-        self.themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
+        self.themeDropdown.addItems(["Dark", "Red", "Blue"])
         self.themeDropdown.setFixedHeight(40)
         self.themeDropdown.setCursor(Qt.CursorShape.PointingHandCursor)
 

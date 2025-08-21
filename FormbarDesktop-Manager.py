@@ -82,7 +82,7 @@ class FormbarApp(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
-        QApplication.setPalette(themes.lightpalette)
+        QApplication.setPalette(themes.darkpalette)
 
 
         #? Load configsP
@@ -104,12 +104,10 @@ class FormbarApp(QDialog):
             managerLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
-                    QApplication.setPalette(themes.lightpalette)
-                case 1:
                     QApplication.setPalette(themes.darkpalette)
-                case 2:
+                case 1:
                     QApplication.setPalette(themes.redPalette)
-                case 3:
+                case 2:
                     QApplication.setPalette(themes.bluePalette)
 
         try:
