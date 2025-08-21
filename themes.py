@@ -42,3 +42,4 @@ class Themes:
         self.pinkGradient.setBrush(self.pinkGradient.ColorRole.Window, QBrush(gradient))
         self.pinkGradient.setBrush(self.redPalette.ColorRole.Base, QBrush(gradient))
         self.pinkGradient.setBrush(self.redPalette.ColorRole.AlternateBase, QBrush(gradient))
+        self.pinkGradient.setBrush(self.bluePalette.ColorRole.Text, QBrush(gradient))

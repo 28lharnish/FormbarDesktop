@@ -261,7 +261,7 @@ class WorkerObject(QObject):
                 for student in range(0, len(self.tempStudentKeys)):
                     if self.tempStudents[self.tempStudentKeys[student]]['API'] != apikey:
                         self.studentsInClass.append(self.tempStudents[self.tempStudentKeys[student]])
-                        self.studentsInClassByName.append(self.tempStudents[self.tempStudentKeys[student]]["username"])
+                        self.studentsInClassByName.append(self.tempStudents[self.tempStudentKeys[student]]["name"])
                 self.resetStudents.emit()
                 self.createStudents.emit(self.tempStudents, self.studentsInClassByName)
 
@@ -288,7 +288,7 @@ class WorkerObject(QObject):
 
     def allowAllVote(self):
         for student in range(0, len(self.tempStudentKeys)):             
-            self.sio.emit('votingRightChange', (self.tempStudents[self.tempStudentKeys[student]]["username"], True, self.studentsInClassByName))
+            self.sio.emit('votingRightChange', (self.tempStudents[self.tempStudentKeys[student]]["name"], True, self.studentsInClassByName))
 
     def sendPoll(self, customPoll):
         try:

@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, QThread, QObject, pyqtSlot, pyqtSignal
 from PyQt6.QtGui import qRgb, QIcon
-from PyQt6.QtWidgets import QApplication, QDialog, QRadioButton
+from PyQt6.QtWidgets import QApplication, QDialog, QRadioButton, QPushButton
 from functools import partial
 import sys, os
 import socketio
@@ -10,7 +10,7 @@ from custLogging import custLogging
 
 #? Import external layouts
 from models import *
-from studentLayout import StudentLayout
+from devLayout import DevStudentLayout
 from themes import Themes
 
 debug = True
@@ -45,7 +45,7 @@ class FormbarApp(QDialog):
         self.thread.start()
 
         def getLayout():
-            return StudentLayout()
+            return DevStudentLayout()
         
         studentLayout = getLayout()
 
@@ -74,11 +74,11 @@ class FormbarApp(QDialog):
         studentLayout.helpTicketButton.clicked.connect(self.helpTicketSignal.emit)
         studentLayout.takeBreakButton.clicked.connect(self.takeBreakSignal.emit)
         studentLayout.removeVoteButton.clicked.connect(partial(self.voteSelectedSignal.emit, 'remove'))
-        studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
+        #studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
 
         self.setWindowFlags(Qt.WindowType.Window)
-        self.setLayout(studentLayout.mainLayout)
-        self.setMinimumSize(500, 700)
+        self.setLayout(studentLayout.fullPageLayout)
+        self.setMinimumSize(1200, 700)
         self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
@@ -160,8 +160,8 @@ class FormbarApp(QDialog):
                 studentLayout.promptText.setText("No current poll.")
 
         def updateVoteOptions():
-            while studentLayout.votinglayout.count():
-                item = studentLayout.votinglayout.takeAt(0)
+            while studentLayout.showVoteOptions.count():
+                item = studentLayout.showVoteOptions.takeAt(0)
                 widget = item.widget()
                 if widget is not None:
                     widget.deleteLater()
@@ -172,19 +172,42 @@ class FormbarApp(QDialog):
                 def saveVote(name):
                     self.lastVote = name
 
-                optionRadio = QRadioButton(option["answer"])
+                optionRadio = QPushButton(option["answer"])
                 optionRadio.clicked.connect(partial(self.voteSelectedSignal.emit, option["answer"]))
                 optionRadio.clicked.connect(partial(saveVote, option["answer"]))
                 optionColorPalette = optionRadio.palette()
+                optionRadio.setFixedHeight(40)
                 hexToRgb = tuple(int(option["color"].strip("#")[i:i+2], 16) for i in (0, 2, 4))
-                optionColorPalette.setColor(optionColorPalette.ColorRole.WindowText, qRgb(hexToRgb[0], hexToRgb[1], hexToRgb[2]))
-                optionColorPalette.setColor(optionColorPalette.ColorRole.Accent, qRgb(hexToRgb[0], hexToRgb[1], hexToRgb[2]))
+                darken = 100
+                red = hexToRgb[0] - darken
+                if(red < 0): red = 0
+                grn = hexToRgb[1] - darken
+                if(grn < 0): grn = 0
+                blu = hexToRgb[2] - darken
+                if(blu < 0): blu = 0
+
+
+                lighten = 30
+                lred = hexToRgb[0] - lighten
+                if(lred < 0): lred = 0
+                lgrn = hexToRgb[1] - lighten
+                if(lgrn < 0): lgrn = 0
+                lblu = hexToRgb[2] - lighten
+                if(lblu < 0): lblu = 0
+
+                optionRadio.setCursor(Qt.CursorShape.PointingHandCursor)
+                optionColorPalette.setColor(optionColorPalette.ColorRole.Button, qRgb(red, grn, blu))
+                optionColorPalette.setColor(optionColorPalette.ColorRole.ButtonText, qRgb(255, 255, 255))
+                optionRadio.setStyleSheet(
+                    "QPushButton::hover {" + f"background: rgb({lred}, {lgrn}, {lblu});" + "transform: scale(2);" +"}"
+                )
                 optionRadio.setPalette(optionColorPalette)
 
-                if option["answer"] == self.lastVote:
-                    optionRadio.setChecked(True)
+                #if option["answer"] == self.lastVote:
+                    #optionRadio.setChecked(True)
 
-                studentLayout.votinglayout.addWidget(optionRadio)
+                studentLayout.showVoteOptions.addWidget(optionRadio)
+
 
         def createRows(data):
             newRows = []
