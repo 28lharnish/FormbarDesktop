@@ -9,45 +9,58 @@ QMainWindow {
 QMainWindow,
 QMainWindow QGroupBox#votingBox,
 QMainWindow QLineEdit#textInputs,
-QMainWindow QComboBox {
-    background: #222222
+QMainWindow QComboBox,
+QMainWindow QDialog {
+    background: #ffffff;
+    color: black;
 }
 QMainWindow QPushButton,
 QMainWindow QHeaderView::section,
 QMainWindow QTabBar::tab,
 QMainWindow QTabBar::tab:!selected {
-    background: #333333
+    background: #bbbbbb;
+    color: black;
 }
 QMainWindow QGroupBox,
 QMainWindow QLineEdit,
 QMainWindow QTabBar::tab:selected,
 QMainWindow QLineEdit {
-    background: #0b0b0b
+    background: #999999;
+    color: black;
 }
 QMainWindow QTableView {
-    background: #000000
+    background: #666666;
+    color: black;
 }
 
 QMainWindow#darkTheme,
 QMainWindow#darkTheme QGroupBox#votingBox,
 QMainWindow#darkTheme QLineEdit#textInputs,
-QMainWindow#darkTheme QComboBox {
-    background: #222222
+QMainWindow#darkTheme QComboBox,
+QMainWindow#darkTheme QDialog {
+    background: #222222;
+    color: white;
 }
 QMainWindow#darkTheme QPushButton,
 QMainWindow#darkTheme QHeaderView::section,
 QMainWindow#darkTheme QTabBar::tab,
 QMainWindow#darkTheme QTabBar::tab:!selected {
-    background: #333333
+    background: #333333;
+    color: white;
 }
 QMainWindow#darkTheme QGroupBox,
 QMainWindow#darkTheme QLineEdit,
 QMainWindow#darkTheme QTabBar::tab:selected,
 QMainWindow#darkTheme QLineEdit {
-    background: #0b0b0b
+    background: #0b0b0b;
+    color: white;
 }
 QMainWindow#darkTheme QTableView {
-    background: #000000
+    background: #000000;
+    color: white;
+}
+QMainWindow#darkTheme QLabel {
+    color: white;
 }
 
 
@@ -56,52 +69,69 @@ QMainWindow#darkTheme QTableView {
 QMainWindow#redTheme,
 QMainWindow#redTheme QGroupBox#votingBox,
 QMainWindow#redTheme QLineEdit#textInputs,
-QMainWindow#redTheme QComboBox {
-    background: #850007
+QMainWindow#redTheme QComboBox,
+QMainWindow#redTheme QDialog {
+    background: #850007;
+    color: white;
 }
 QMainWindow#redTheme QPushButton,
 QMainWindow#redTheme QHeaderView::section,
 QMainWindow#redTheme QTabBar::tab,
 QMainWindow#redTheme QTabBar::tab:!selected {
-    background: #af2c33
+    background: #af2c33;
+    color: white;
 }
 QMainWindow#redTheme QGroupBox,
 QMainWindow#redTheme QLineEdit,
 QMainWindow#redTheme QTabBar::tab:selected,
 QMainWindow#redTheme QLineEdit {
-    background: #410003
+    background: #410003;
+    color: white;
 }
 QMainWindow#redTheme QTableView {
-    background: #270000
+    background: #270000;
+    color: white;
+}
+QMainWindow#redTheme QLabel {
+    color: white;
 }
 
 
 
-QMainWindow#blueTheme {
+QMainWindow#blueTheme,
+QMainWindow#blueTheme QDialog {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf)
 }
 QMainWindow#blueTheme QGroupBox#votingBox,
 QMainWindow#blueTheme QLineEdit#textInputs,
 QMainWindow#blueTheme QComboBox {
-    background: #6b9be8
+    background: #6b9be8;
+    color: white;
 }
 QMainWindow#blueTheme QPushButton,
 QMainWindow#blueTheme QHeaderView::section,
 QMainWindow#blueTheme QTabBar::tab,
 QMainWindow#blueTheme QTabBar::tab:!selected {
-    background: #274f91
+    background: #274f91;
+    color: white;
 }
 QMainWindow#blueTheme QGroupBox,
 QMainWindow#blueTheme QLineEdit,
 QMainWindow#blueTheme QTabBar::tab:selected,
 QMainWindow#blueTheme QLineEdit {
-    background: #002766
+    background: #002766;
+    color: white;
 }
 QMainWindow#blueTheme QTableView {
-    background: #001230
+    background: #001230;
+    color: white;
+}
+QMainWindow#blueTheme QLabel {
+    color: white;
 }
 
-QMainWindow#pinkTheme {
+QMainWindow#pinkTheme,
+QMainWindow#pinkTheme QDialog {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffd6fb, stop: 1 #ffaff8)
 }
 QMainWindow#pinkTheme QGroupBox#votingBox,
@@ -228,7 +258,7 @@ QComboBox::down-arrow:on {
 
 QLineEdit#textInputs {
     margin: 0 5px;
-    padding-left: 10px
+    padding-left: 10px;
 }
 
 QLabel#currentVoteLabel {
@@ -242,4 +272,17 @@ QPushButton#currentVoteButton {
     font-size: 36px;
     font-weight: 700;
     color: 
+}
+
+QLabel {
+    font-size: 16px;
+    font-style: italic;
+    font-weight: 500;
+    margin: 5px;
+}
+
+QChartView,
+QChart,
+QPieSeries {
+    background: transparent;
 }

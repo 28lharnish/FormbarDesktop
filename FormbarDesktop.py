@@ -1,9 +1,10 @@
-from PyQt6.QtCore import Qt, QThread, QObject, pyqtSlot, pyqtSignal, QFile
-from PyQt6.QtGui import qRgb, QIcon, QDesktopServices
-from PyQt6.QtWidgets import QApplication, QStyle, QDialog, QRadioButton, QPushButton, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtCore import Qt, QThread, QObject, pyqtSlot, pyqtSignal, QFile, QCoreApplication, QProcess
+from PyQt6.QtGui import qRgb, QIcon, QDesktopServices, QPen, QColor
+from PyQt6.QtWidgets import QStyleFactory, QApplication, QStyle, QDialog, QRadioButton, QPushButton, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from functools import partial
 import sys, os
 import socketio
+import subprocess
 import datetime as DT
 import json
 import requests
@@ -14,7 +15,7 @@ from models import *
 from Layouts.studentLayout import StudentLayout
 
 debug = True
-versionNumber = "1.0.5"
+versionNumber = "1.0.6-dev"
 
 try:
     from ctypes import windll
@@ -36,6 +37,10 @@ class FormbarApp(QMainWindow):
     checkNewVersion = requests.get('https://api.github.com/repos/28lharnish/FormbarDesktop/releases/latest')
     updateAvailVersion = checkNewVersion.json()["tag_name"]
 
+    def restart(self):
+        QCoreApplication.quit()
+        subprocess.call([sys.executable, sys.argv[0]])
+
     def ReloadStyles(self):
         try:
             with open(os.path.join(os.path.dirname(__file__), "./style.qss"), "r") as f:
@@ -43,6 +48,12 @@ class FormbarApp(QMainWindow):
             self.setStyleSheet(_style)
         except FileNotFoundError:
             print("Error: style.qss not found. Please ensure the file exists in the same directory.")
+
+    def deleteConfig(self):
+        configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w')
+        json.dump({}, configJSON)
+        configJSON.close()
+        self.restart()
 
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
@@ -90,6 +101,7 @@ class FormbarApp(QMainWindow):
         studentLayout.removeVoteButton.clicked.connect(partial(self.voteSelectedSignal.emit, 'remove'))
         studentLayout.removeVoteButton.clicked.connect(setCurrentVoteNone)
         studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
+        studentLayout.settingsRemoveAll.clicked.connect(self.deleteConfig)
 
         wid = QWidget(self)
         self.setCentralWidget(wid)
@@ -102,27 +114,28 @@ class FormbarApp(QMainWindow):
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), './Images/icon.ico')))
         self.ReloadStyles()
-        QMainWindow.setObjectName(self, "darkTheme")
+        self.setObjectName("lightTheme")
         
 
         self.UpdateAvailable = QDialog(self)
-        self.UpdateAvailable.setStyleSheet("""
-                                            QDialog { 
-                                                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);
-                                            }
+        self.UpdateAvailable.setParent(self)
+        # self.UpdateAvailable.setStyleSheet("""
+        #                                     QDialog { 
+        #                                         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);
+        #                                     }
                                            
-                                            QLabel {
-                                                color: #09172e
-                                           }
+        #                                     QLabel {
+        #                                         color: #09172e
+        #                                    }
 
-                                           QPushButton {
-                                                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #577fbf, stop: 1 #365c99);
-                                                border: 2px solid #55000000;
-                                                margin: 10px;
-                                                border-radius: 10px;
-                                                color: #dddddd;
-                                           }
-                                           """)
+        #                                    QPushButton {
+        #                                         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #577fbf, stop: 1 #365c99);
+        #                                         border: 2px solid #55000000;
+        #                                         margin: 10px;
+        #                                         border-radius: 10px;
+        #                                         color: #dddddd;
+        #                                    }
+        #                                    """)
         self.UpdateAvailable.setFixedSize(600, 400)
         self.UpdateAvailable.setWindowTitle("Update Available")
 
@@ -183,12 +196,14 @@ class FormbarApp(QMainWindow):
             studentLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
-                    QMainWindow.setObjectName(self, "darkTheme")
+                    QMainWindow.setObjectName(self, "lightTheme")
                 case 1:
-                    QMainWindow.setObjectName(self, "redTheme")
+                    QMainWindow.setObjectName(self, "darkTheme")
                 case 2:
-                    QMainWindow.setObjectName(self, "blueTheme")
+                    QMainWindow.setObjectName(self, "redTheme")
                 case 3:
+                    QMainWindow.setObjectName(self, "blueTheme")
+                case 4:
                     QMainWindow.setObjectName(self, "pinkTheme")
             self.ReloadStyles()
 
@@ -200,6 +215,9 @@ class FormbarApp(QMainWindow):
                 studentLayout.settingsApiKey.setText(configData["apiKey"])
             if "apiLink" in configData:
                 studentLayout.settingsApiLink.setText(configData["apiLink"])
+
+            if "apiKey" in configData and "apiLink" in configData:
+                submitApi(self)
 
             if "fdTheme" in configData:
                 setTheme(configData["fdTheme"])
@@ -310,6 +328,18 @@ class FormbarApp(QMainWindow):
             studentLayout.voteView.setModel(None) 
             model = TableModel(None, ["Votes", "Responses", "Color"], voteRows)
             studentLayout.voteView.setModel(model)
+            studentLayout.series.clear()
+            print(voteRows)
+            for row in voteRows:
+                slice = studentLayout.series.append('Jane', row[1])
+                if row[2] == "None":  
+                    slice.setBrush(QColor("#e1e1e1"))
+                    slice.setBorderWidth(0)
+                    slice.setBorderColor(QColor("transparent"))
+                else:
+                    slice.setBrush(QColor(row[2]))
+                    slice.setBorderWidth(0)
+                    slice.setBorderColor(QColor("transparent"))
             
         
         def disableApi():
@@ -356,7 +386,11 @@ class WorkerObject(QObject):
                         print("No class.")
                 except:
                     Logger("SetClass", "ERR: No Class / Update Failed to Send")
-                
+
+            @self.sio.event
+            def customPollUpdate(data):
+                Logger("customPollUpdate")
+                #self.updateData.emit(data)
 
             @self.sio.event
             def vbUpdate(data):
@@ -409,6 +443,5 @@ if __name__ == "__main__":
     if f"v{versionNumber}" != formapp.updateAvailVersion:
         if versionNumber.__contains__("-dev") == False:
             formapp.UpdateAvailable.exec()
-   
 
     sys.exit(app.exec())

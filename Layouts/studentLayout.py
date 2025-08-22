@@ -1,32 +1,41 @@
-
-from PyQt6.QtCore import Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
-from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont
+from PyQt6.QtCharts import QPieSeries, QChart, QChartView
+from PyQt6.QtCore import QSize, Qt, QAbstractTableModel, QAbstractItemModel, QVariant, QThread, QObject, pyqtSlot, pyqtSignal, QPersistentModelIndex, QModelIndex
+from PyQt6.QtGui import qRgb, QIcon, QPalette, QFont, QPainter, QPen, QColor
 from PyQt6.QtWidgets import (QTabWidget, QApplication, QLayout, QComboBox, QCheckBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTableWidgetItem, QStyleFactory, QStyle)
 from models import TableModel
 
 class StudentLayout:
     def __init__(self):
         self.activeForm()
+
         self.FormOptions()
+        self.debugTestingTab()
+        self.profileTab()
         self.settingsTab()
 
         self.activeFormW = QWidget()
         self.activeFormW.setLayout(self.votingShownLayout)
+        self.activeFormW.setMinimumWidth(600)
 
         self.formW = QGroupBox()
         self.formW.setLayout(self.formOptionsLayout)
 
+        self.profileTabW = QGroupBox()
+        self.profileTabW.setLayout(self.profileTabLayout)
+
         self.settingsTabW = QGroupBox()
         self.settingsTabW.setLayout(self.settingsTabLayout)
 
-        #self.studentsTabW = QGroupBox("Students")
-        #self.studentsTabW.setLayout(self.studentTabLayout)
+        self.debugTabW = QGroupBox()
+        self.debugTabW.setLayout(self.debugLayout)
         
         self.tabs = QTabWidget()
         self.tabs.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
 
         self.tabs.addTab(self.formW, "Poll Options")
+        self.tabs.addTab(self.profileTabW, "Profile")
         self.tabs.addTab(self.settingsTabW, "Settings")
+        self.tabs.addTab(self.debugTabW, "Debug")
         #self.tabs.addTab(self.studentsTabW, "Students")
 
         self.tabs.setDocumentMode(True)
@@ -89,14 +98,62 @@ class StudentLayout:
         self.formOptionsLayout.addWidget(self.helpBreakBox)
         self.formOptionsLayout.addStretch()
 
+
+
+    def profileTab(self):
+        self.profileTabLayout = QVBoxLayout()
+        
+        self.profileTabLayoutText = QLabel()
+        self.profileTabLayoutText.setText("The profile page is currently\nunavailable.")
+        self.profileTabLayoutText.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.profileTabLayoutText.setObjectName("currentVoteLabel")
+        self.profileTabLayout.addWidget(self.profileTabLayoutText)
+
+    def debugTestingTab(self):
+        self.debugLayout = QVBoxLayout()
+        
+        self.series = QPieSeries()
+        self.series.setHoleSize(0.35)
+        self.series.append('Jane', 1)
+        self.series.append('Joe', 2)
+        self.series.append('Andy', 3)
+        self.series.append('Barbara', 4)
+        self.series.append('Axel', 5)
+
+        #self.slice = self.series.slices()[1]
+        #self.slice.setExploded()
+        #self.slice.setLabelVisible()
+        self.pen = QPen(QColor(255, 0, 0), 0)
+        #self.slice.setPen(self.pen)
+        #self.slice.setBrush(QColor(255, 0, 0))
+
+
+        self.chart = QChart()
+        self.chart.setBackgroundPen(QColor("transparent"))
+        self.chart.setBackgroundBrush(QColor("transparent"))
+        self.chart.addSeries(self.series)
+        self.chart.legend().hide()
+        self.chart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
+        
+
+        self._chart_view = QChartView(self.chart)
+        self._chart_view.setBackgroundBrush(QColor(255, 255, 255, 0))
+        self._chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        self.debugLayout.addWidget(self._chart_view)
+
     def settingsTab(self):
-        self.settingsBox = QGroupBox("Settings")
+        self.settingsBox = QWidget()
 
         self.themeDropdownLabel = QLabel("Theme:")
         self.themeDropdown = QComboBox()
-        self.themeDropdown.addItems(["Dark", "Red", "Blue", "Pink"])
+        self.themeDropdown.addItems(["Light (ew)", "Dark", "Red", "Blue", "Pink"])
         self.themeDropdown.setFixedHeight(40)
         self.themeDropdown.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        stayOnTopBox = QWidget()
+        stayOnTopBoxLayout = QHBoxLayout()
+        stayOnTopBox.setLayout(stayOnTopBoxLayout)
 
         self.stayOnTopCheckLabel = QLabel("Keep window on top?")
         self.stayOnTopCheck = QCheckBox()
@@ -107,7 +164,7 @@ class StudentLayout:
         self.settingsApiKey.setFixedHeight(40)
         self.settingsApiKey.setEchoMode(QLineEdit.EchoMode.Password)
         
-        self.settingsApiLinkLabel = QLabel("API Link (Leave this field blank if you're not a developer):")
+        self.settingsApiLinkLabel = QLabel("API Link (Developer Only):")
         self.settingsApiLink = QLineEdit("")
         self.settingsApiLink.setObjectName("textInputs")
         self.settingsApiLink.setFixedHeight(40)
@@ -116,10 +173,16 @@ class StudentLayout:
         self.settingsConnect.setFixedHeight(40)
         self.settingsConnect.setCursor(Qt.CursorShape.PointingHandCursor)
 
+        self.settingsRemoveAll = QPushButton("Clear Settings")
+        self.settingsRemoveAll.setFixedHeight(40)
+        self.settingsRemoveAll.setCursor(Qt.CursorShape.PointingHandCursor)
+
         self.settingsTabLayout = QVBoxLayout()
         self.settingsTabLayout.addStretch(1)
-        self.settingsTabLayout.addWidget(self.stayOnTopCheckLabel)
-        self.settingsTabLayout.addWidget(self.stayOnTopCheck)
+        stayOnTopBoxLayout.addWidget(self.stayOnTopCheckLabel)
+        stayOnTopBoxLayout.addWidget(self.stayOnTopCheck)
+        stayOnTopBoxLayout.addStretch(1)
+        self.settingsTabLayout.addWidget(stayOnTopBox)
         self.settingsTabLayout.addWidget(self.themeDropdownLabel)
         self.settingsTabLayout.addWidget(self.themeDropdown)
         self.settingsTabLayout.addWidget(self.settingsApiKeyLabel)
@@ -127,6 +190,7 @@ class StudentLayout:
         self.settingsTabLayout.addWidget(self.settingsApiLinkLabel)
         self.settingsTabLayout.addWidget(self.settingsApiLink)
         self.settingsTabLayout.addWidget(self.settingsConnect)
+        self.settingsTabLayout.addWidget(self.settingsRemoveAll)
         self.settingsTabLayout.addStretch(1)
         self.settingsConnect.setDefault(True)
         
