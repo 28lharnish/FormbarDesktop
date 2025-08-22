@@ -1,17 +1,17 @@
-from PyQt6.QtCore import Qt, QThread, QObject, pyqtSlot, pyqtSignal
-from PyQt6.QtGui import qRgb, QIcon
-from PyQt6.QtWidgets import QApplication, QDialog, QRadioButton, QPushButton
+from PyQt6.QtCore import Qt, QThread, QObject, pyqtSlot, pyqtSignal, QFile
+from PyQt6.QtGui import qRgb, QIcon, QDesktopServices
+from PyQt6.QtWidgets import QApplication, QStyle, QDialog, QRadioButton, QPushButton, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from functools import partial
 import sys, os
 import socketio
 import datetime as DT
 import json
+import requests
 from custLogging import custLogging
 
 #? Import external layouts
 from models import *
-from devLayout import DevStudentLayout
-from themes import Themes
+from Layouts.studentLayout import StudentLayout
 
 debug = True
 versionNumber = "1.0.5-dev"
@@ -25,16 +25,29 @@ except ImportError:
 
 Logger = custLogging().log
 
-class FormbarApp(QDialog):
+class FormbarApp(QMainWindow):
     startSocketSignal = pyqtSignal(str, str)
     helpTicketSignal = pyqtSignal()
     takeBreakSignal = pyqtSignal()
     voteSelectedSignal = pyqtSignal(str)
 
+    updateAvailVersion = ""
+    
+    checkNewVersion = requests.get('https://api.github.com/repos/28lharnish/FormbarDesktop/releases/latest')
+    updateAvailVersion = checkNewVersion.json()["tag_name"]
+
+    def ReloadStyles(self):
+        try:
+            with open("style.qss", "r") as f:
+                _style = f.read()
+            self.setStyleSheet(_style)
+        except FileNotFoundError:
+            print("Error: style.qss not found. Please ensure the file exists in the same directory.")
+
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
 
-        themes = Themes()
+        #themes = Themes()
         self.worker = WorkerObject()
         self.thread = QThread()
         self.worker.moveToThread(self.thread)
@@ -45,7 +58,7 @@ class FormbarApp(QDialog):
         self.thread.start()
 
         def getLayout():
-            return DevStudentLayout()
+            return StudentLayout()
         
         studentLayout = getLayout()
 
@@ -60,31 +73,96 @@ class FormbarApp(QDialog):
                 self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
                 self.show()
                 self.activateWindow()
-                print("Stay on top.")
                 return
             else:
                 self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, False)
                 self.show()
                 self.activateWindow()
-                print("Stay off top.")
                 return
 
+        def setCurrentVoteNone():
+            studentLayout.currentVoteShow.setStyleSheet("")
+            studentLayout.currentVoteShow.setText("None")
 
         studentLayout.settingsConnect.clicked.connect(submitApi)
         studentLayout.helpTicketButton.clicked.connect(self.helpTicketSignal.emit)
         studentLayout.takeBreakButton.clicked.connect(self.takeBreakSignal.emit)
         studentLayout.removeVoteButton.clicked.connect(partial(self.voteSelectedSignal.emit, 'remove'))
-        #studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
+        studentLayout.removeVoteButton.clicked.connect(setCurrentVoteNone)
+        studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
 
-        self.setWindowFlags(Qt.WindowType.Window)
-        self.setLayout(studentLayout.fullPageLayout)
+        wid = QWidget(self)
+        self.setCentralWidget(wid)
+        wid.setLayout(studentLayout.fullPageLayout)
+
         self.setMinimumSize(1200, 700)
-        self.setWindowTitle("Formbar Desktop v" + versionNumber + " | Made by Landon Harnish")
+        self.setWindowFlags(Qt.WindowType.Window)
+        self.setWindowTitle("Formbar Desktop | v" + versionNumber + " | Made by Landon Harnish")
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
-        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
-        QApplication.setPalette(themes.darkpalette)
+        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), './Images/icon.ico')))
+        self.ReloadStyles()
+        QMainWindow.setObjectName(self, "darkTheme")
+        
 
+        self.UpdateAvailable = QDialog(self)
+        self.UpdateAvailable.setStyleSheet("""
+                                            QDialog { 
+                                                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);
+                                            }
+                                           
+                                            QLabel {
+                                                color: #09172e
+                                           }
+
+                                           QPushButton {
+                                                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #577fbf, stop: 1 #365c99);
+                                                border: 2px solid #55000000;
+                                                margin: 10px;
+                                                border-radius: 10px;
+                                                color: #dddddd;
+                                           }
+                                           """)
+        self.UpdateAvailable.setFixedSize(600, 400)
+        self.UpdateAvailable.setWindowTitle("Update Available")
+
+        updateAvailLayout = QVBoxLayout()
+        updateAvailTitle = QLabel()
+        updateAvailTitle.setText("There is an update available!")
+        updateAvailTitle.setFont(QFont("Arial", 24, 900, True))
+
+        updateAvailDesc = QLabel()
+        updateAvailDesc.setText(f"You can now update from v{versionNumber} to {self.updateAvailVersion}!")
+        updateAvailDesc.setFont(QFont("Arial", 16, 700, True))
+
+        
+        helpBreakBox = QWidget()
+
+        helpTicketButton = QPushButton("Ignore")
+        helpTicketButton.setFixedHeight(70)
+        helpTicketButton.clicked.connect(self.UpdateAvailable.close);
+        helpTicketButton.setFont(QFont("Arial", 18, QFont.Weight.DemiBold, False))
+        helpTicketButton.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        takeBreakButton = QPushButton("Open GitHub")
+        takeBreakButton.setFixedHeight(70)
+        import webbrowser
+        takeBreakButton.clicked.connect(partial(webbrowser.open, 'https://github.com/28lharnish/FormbarDesktop/releases/latest'));
+        takeBreakButton.setFont(QFont("Arial", 18, QFont.Weight.DemiBold, False))
+        takeBreakButton.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        helpBreakLayout = QHBoxLayout()
+        helpBreakLayout.addWidget(helpTicketButton)
+        helpBreakLayout.addWidget(takeBreakButton)
+        helpBreakLayout.setSpacing(0)
+        helpBreakBox.setLayout(helpBreakLayout)
+
+        updateAvailLayout.addWidget(updateAvailTitle)
+        updateAvailLayout.addWidget(updateAvailDesc)
+        updateAvailLayout.addStretch(1)
+        updateAvailLayout.addWidget(helpBreakBox)
+        updateAvailLayout.addStretch(1)
+        self.UpdateAvailable.setLayout(updateAvailLayout)
 
         #? Load configs
         
@@ -105,13 +183,14 @@ class FormbarApp(QDialog):
             studentLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
-                    QApplication.setPalette(themes.darkpalette)
+                    QMainWindow.setObjectName(self, "darkTheme")
                 case 1:
-                    QApplication.setPalette(themes.redPalette)
+                    QMainWindow.setObjectName(self, "redTheme")
                 case 2:
-                    QApplication.setPalette(themes.bluePalette)
+                    QMainWindow.setObjectName(self, "blueTheme")
                 case 3:
-                    QApplication.setPalette(themes.pinkGradient)
+                    QMainWindow.setObjectName(self, "pinkTheme")
+            self.ReloadStyles()
 
         try:
             configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
@@ -142,6 +221,7 @@ class FormbarApp(QDialog):
 
         self.currentData = {}
         self.lastVote = ''
+        self.lastVoteColor = (0, 0, 0)
         self.voteOptions = []
         
         def updateData(data):
@@ -169,12 +249,14 @@ class FormbarApp(QDialog):
                     item.layout().deleteLater()
 
             for option in self.voteOptions:
-                def saveVote(name):
-                    self.lastVote = name
+                def showVote(name, color):
+                    studentLayout.currentVoteShow.setStyleSheet("QPushButton {" + f"background: rgb({color[0]}, {color[1]}, {color[2]});" +"color:white;}")
+                    studentLayout.currentVoteShow.setText(name)
+
 
                 optionRadio = QPushButton(option["answer"])
                 optionRadio.clicked.connect(partial(self.voteSelectedSignal.emit, option["answer"]))
-                optionRadio.clicked.connect(partial(saveVote, option["answer"]))
+                optionRadio.clicked.connect(partial(showVote, option["answer"], tuple(int(option["color"].strip("#")[i:i+2], 16) for i in (0, 2, 4))))
                 optionColorPalette = optionRadio.palette()
                 optionRadio.setFixedHeight(40)
                 hexToRgb = tuple(int(option["color"].strip("#")[i:i+2], 16) for i in (0, 2, 4))
@@ -196,15 +278,12 @@ class FormbarApp(QDialog):
                 if(lblu < 0): lblu = 0
 
                 optionRadio.setCursor(Qt.CursorShape.PointingHandCursor)
-                optionColorPalette.setColor(optionColorPalette.ColorRole.Button, qRgb(red, grn, blu))
                 optionColorPalette.setColor(optionColorPalette.ColorRole.ButtonText, qRgb(255, 255, 255))
                 optionRadio.setStyleSheet(
-                    "QPushButton::hover {" + f"background: rgb({lred}, {lgrn}, {lblu});" + "transform: scale(2);" +"}"
+                    "QPushButton::hover {" + f"background: rgb({lred}, {lgrn}, {lblu});" +"}" + "QPushButton {" + f"background: rgb({red}, {grn}, {blu});" +"}"
                 )
                 optionRadio.setPalette(optionColorPalette)
 
-                #if option["answer"] == self.lastVote:
-                    #optionRadio.setChecked(True)
 
                 studentLayout.showVoteOptions.addWidget(optionRadio)
 
@@ -323,4 +402,10 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     formapp = FormbarApp()
     formapp.show()
+
+    if versionNumber != formapp.updateAvailVersion:
+        if versionNumber.__contains__("-dev") == False:
+            formapp.UpdateAvailable.exec()
+   
+
     sys.exit(app.exec())

@@ -1,0 +1,223 @@
+* {
+    
+}
+
+QMainWindow {
+    background: #ff0000
+}
+
+QMainWindow#darkTheme,
+QMainWindow#darkTheme QGroupBox#votingBox,
+QMainWindow#darkTheme QLineEdit#textInputs,
+QMainWindow#darkTheme QComboBox {
+    background: #222222
+}
+QMainWindow#darkTheme QPushButton,
+QMainWindow#darkTheme QHeaderView::section,
+QMainWindow#darkTheme QTabBar::tab,
+QMainWindow#darkTheme QTabBar::tab:!selected {
+    background: #333333
+}
+QMainWindow#darkTheme QGroupBox,
+QMainWindow#darkTheme QLineEdit,
+QMainWindow#darkTheme QTabBar::tab:selected,
+QMainWindow#darkTheme QLineEdit {
+    background: #0b0b0b
+}
+QMainWindow#darkTheme QTableView {
+    background: #000000
+}
+
+
+
+
+QMainWindow#redTheme,
+QMainWindow#redTheme QGroupBox#votingBox,
+QMainWindow#redTheme QLineEdit#textInputs,
+QMainWindow#redTheme QComboBox {
+    background: #850007
+}
+QMainWindow#redTheme QPushButton,
+QMainWindow#redTheme QHeaderView::section,
+QMainWindow#redTheme QTabBar::tab,
+QMainWindow#redTheme QTabBar::tab:!selected {
+    background: #af2c33
+}
+QMainWindow#redTheme QGroupBox,
+QMainWindow#redTheme QLineEdit,
+QMainWindow#redTheme QTabBar::tab:selected,
+QMainWindow#redTheme QLineEdit {
+    background: #410003
+}
+QMainWindow#redTheme QTableView {
+    background: #270000
+}
+
+
+
+QMainWindow#blueTheme {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf)
+}
+QMainWindow#blueTheme QGroupBox#votingBox,
+QMainWindow#blueTheme QLineEdit#textInputs,
+QMainWindow#blueTheme QComboBox {
+    background: #6b9be8
+}
+QMainWindow#blueTheme QPushButton,
+QMainWindow#blueTheme QHeaderView::section,
+QMainWindow#blueTheme QTabBar::tab,
+QMainWindow#blueTheme QTabBar::tab:!selected {
+    background: #274f91
+}
+QMainWindow#blueTheme QGroupBox,
+QMainWindow#blueTheme QLineEdit,
+QMainWindow#blueTheme QTabBar::tab:selected,
+QMainWindow#blueTheme QLineEdit {
+    background: #002766
+}
+QMainWindow#blueTheme QTableView {
+    background: #001230
+}
+
+QMainWindow#pinkTheme {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffd6fb, stop: 1 #ffaff8)
+}
+QMainWindow#pinkTheme QGroupBox#votingBox,
+QMainWindow#pinkTheme QLineEdit#textInputs,
+QMainWindow#pinkTheme QComboBox {
+    background: #ffaff8;
+    color: black;
+}
+QMainWindow#pinkTheme QPushButton,
+QMainWindow#pinkTheme QHeaderView::section,
+QMainWindow#pinkTheme QTabBar::tab,
+QMainWindow#pinkTheme QTabBar::tab:!selected {
+    background: #bb79b5;
+    color: black;
+}
+QMainWindow#pinkTheme QGroupBox,
+QMainWindow#pinkTheme QLineEdit,
+QMainWindow#pinkTheme QTabBar::tab:selected,
+QMainWindow#pinkTheme QLineEdit {
+    background: #7a4f77;
+    color: white;
+}
+QMainWindow#pinkTheme QTableView {
+    background: #332132
+}
+
+QPushButton {
+    border-radius: 10px;
+    border: none;
+    min-height: 40px;
+    margin: 0 5px;
+    font-size: 16px;
+}
+
+QGroupBox {
+    border-radius: 10px;
+    margin: 5px;
+    padding: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    margin-top: -5px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+QLineEdit {
+    border-radius: 10px;
+}
+
+QHeaderView {
+    font-size: 18px;
+}
+
+QTableView {
+    border-radius: 5px;
+}
+
+QHeaderView {
+    background: transparent;
+    color: transparent;
+}
+
+QHeaderView::section {
+    margin: 10px;
+    border-radius: 5px;
+    color: white;
+}
+
+QTabWidget::tab-bar {
+    left: 15px;
+    right: 15px;
+}
+
+QTabBar {
+    qproperty-drawBase: 0;
+}
+
+QTabBar::tab {
+    margin-right: 5px;
+    border-radius: 5px;
+    border: none;
+}
+
+QTabBar::tab:selected {
+    width: 120px;
+    height: 25px;
+}
+
+QTabBar::tab:!selected {
+    width: 100px;
+    height: 25px;
+}
+
+QComboBox {
+    margin: 0 5px;
+    border-radius: 10px;
+    border: none;
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 16px;
+}
+
+QComboBox::drop-down 
+{
+    border: 0px;
+}
+
+QComboBox::down-arrow {
+    image: url(./Images/arrow-down.png);
+    width: 14px;
+    height: 14px;
+    right: 10px;
+}
+
+QComboBox::down-arrow:on {
+    image: url(./Images/arrow-up.png);
+    width: 14px;
+    height: 14px;
+    right: 10px;
+}
+
+QLineEdit#textInputs {
+    margin: 0 5px;
+    padding-left: 10px
+}
+
+QLabel#currentVoteLabel {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+QPushButton#currentVoteButton {
+    margin-bottom: 60px;
+    padding: 10px;
+    font-size: 36px;
+    font-weight: 700;
+    color: 
+}

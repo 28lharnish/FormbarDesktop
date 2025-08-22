@@ -11,7 +11,7 @@ import json
 
 #? Import external layouts
 from models import *
-from managerLayout import ManagerLayout
+from Layouts.managerLayout import ManagerLayout
 
 debug = True
 versionNumber = "1.0.0"

@@ -5,7 +5,7 @@ a = Analysis(
     ['FormbarDesktop-Manager.py'],
     pathex=[],
     binaries=[],
-    datas=[('icon.ico', '.')],
+    datas=[('./Images/icon.ico', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['icon.ico'],
+    icon=['./Images/icon.ico'],
     contents_directory='formbetadesktopman_data',
 )
 coll = COLLECT(
