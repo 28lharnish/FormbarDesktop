@@ -403,7 +403,10 @@ if __name__ == "__main__":
     formapp = FormbarApp()
     formapp.show()
 
-    if versionNumber != formapp.updateAvailVersion:
+    print(versionNumber)
+    print(formapp.updateAvailVersion)
+
+    if f"v{versionNumber}" != formapp.updateAvailVersion:
         if versionNumber.__contains__("-dev") == False:
             formapp.UpdateAvailable.exec()
    
