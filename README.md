@@ -62,13 +62,13 @@ A desktop client for the app [Formbar](https://github.com/csmith1188/Formbar.js)
 ## Screenshots
 ### Themes:
 - Dark Theme: 
-    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221559" src="https://github.com/user-attachments/assets/839694a2-1892-4aa4-a740-816bdc19036d" />
+    - ![Dark Theme](https://github.com/user-attachments/assets/839694a2-1892-4aa4-a740-816bdc19036d)
 - Red Theme:
-    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221618" src="https://github.com/user-attachments/assets/3cb44848-7122-46c9-9f2f-d47b7cf6a050" />
+    - ![Red Theme](https://github.com/user-attachments/assets/3cb44848-7122-46c9-9f2f-d47b7cf6a050)
 - Blue Theme: 
-    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221627" src="https://github.com/user-attachments/assets/d7275b3b-f850-4cdd-a60a-93a8cbb565b8" />
+    - ![Blue Theme](https://github.com/user-attachments/assets/d7275b3b-f850-4cdd-a60a-93a8cbb565b8)
 - Pink Theme:
-    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221635" src="https://github.com/user-attachments/assets/ed0700a7-925f-4e88-8968-884e64e7337e" />
+    - ![Pink Theme](https://github.com/user-attachments/assets/ed0700a7-925f-4e88-8968-884e64e7337e)
     
 ---
 
