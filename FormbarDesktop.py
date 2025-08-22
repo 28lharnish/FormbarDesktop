@@ -14,7 +14,7 @@ from models import *
 from Layouts.studentLayout import StudentLayout
 
 debug = True
-versionNumber = "1.0.5-dev"
+versionNumber = "1.0.5"
 
 try:
     from ctypes import windll
@@ -38,7 +38,7 @@ class FormbarApp(QMainWindow):
 
     def ReloadStyles(self):
         try:
-            with open("style.qss", "r") as f:
+            with open(os.path.join(os.path.dirname(__file__), "./style.qss"), "r") as f:
                 _style = f.read()
             self.setStyleSheet(_style)
         except FileNotFoundError:

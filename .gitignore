@@ -7,5 +7,4 @@ __pycache__/
 PyQt6*/
 bin/
 requests/
-*/
 *.zip

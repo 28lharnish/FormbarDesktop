@@ -6,6 +6,28 @@ QMainWindow {
     background: #ff0000
 }
 
+QMainWindow,
+QMainWindow QGroupBox#votingBox,
+QMainWindow QLineEdit#textInputs,
+QMainWindow QComboBox {
+    background: #222222
+}
+QMainWindow QPushButton,
+QMainWindow QHeaderView::section,
+QMainWindow QTabBar::tab,
+QMainWindow QTabBar::tab:!selected {
+    background: #333333
+}
+QMainWindow QGroupBox,
+QMainWindow QLineEdit,
+QMainWindow QTabBar::tab:selected,
+QMainWindow QLineEdit {
+    background: #0b0b0b
+}
+QMainWindow QTableView {
+    background: #000000
+}
+
 QMainWindow#darkTheme,
 QMainWindow#darkTheme QGroupBox#votingBox,
 QMainWindow#darkTheme QLineEdit#textInputs,
@@ -191,14 +213,14 @@ QComboBox::drop-down
 }
 
 QComboBox::down-arrow {
-    image: url(./Images/arrow-down.png);
+    image: url(./formbetadesktop_data/Images/arrow-down.png);
     width: 14px;
     height: 14px;
     right: 10px;
 }
 
 QComboBox::down-arrow:on {
-    image: url(./Images/arrow-up.png);
+    image: url(./formbetadesktop_data/Images/arrow-up.png);
     width: 14px;
     height: 14px;
     right: 10px;

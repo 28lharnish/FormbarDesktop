@@ -5,7 +5,12 @@ a = Analysis(
     ['FormbarDesktop.py'],
     pathex=[],
     binaries=[],
-    datas=[('./Images/icon.ico', '.')],
+    datas=[
+        ('./Images/icon.ico', 'Images'),
+        ('./Images/arrow-up.png', 'Images'),
+        ('./Images/arrow-down.png', 'Images'),
+        ('./style.qss', '.')
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,7 +37,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['./Images/icon.ico'],
+    icon=['Images\\icon.ico'],
     contents_directory='formbetadesktop_data',
 )
 coll = COLLECT(

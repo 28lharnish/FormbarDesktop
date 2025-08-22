@@ -1,6 +1,24 @@
 # <img src='https://github.com/user-attachments/assets/1a8ae6c5-eac1-47d6-b442-b2d55383660d' height=25></img> Formbar Desktop
 
-A desktop client for the app [Formbar](https://github.com/csmith1188/).
+A desktop client for the app [Formbar](https://github.com/csmith1188/Formbar.js).
+
+---
+
+[How to Use Student Panel](https://github.com/28lharnish/FormbarDesktop/#how-to-use-student-panel)
+
+[How to Use Manager Panel](https://github.com/28lharnish/FormbarDesktop/#how-to-use-manager-panel)
+
+[Features](https://github.com/28lharnish/FormbarDesktop/#features)
+
+> [To-Do](https://github.com/28lharnish/FormbarDesktop/#to-do)
+    
+[Screenshots](https://github.com/28lharnish/FormbarDesktop/#screenshots)
+
+> [Themes](https://github.com/28lharnish/FormbarDesktop/#themes)
+    
+[Building](https://github.com/28lharnish/FormbarDesktop/#building)
+
+---
 
 ## How to Use Student Panel:
 1. Unpack the zip to a safe location
@@ -20,7 +38,7 @@ A desktop client for the app [Formbar](https://github.com/csmith1188/).
 
 ---
 
-### Features
+## Features
 - Poll Support
 - Colored Poll Options
 - Help and Break support
@@ -30,11 +48,34 @@ A desktop client for the app [Formbar](https://github.com/csmith1188/).
 - Support for self-hosted Formbars
 - Saves last used themes, API keys, and API Links
 
+### To-Do
+- Automatic updates <i>(updates are seen but must be manually installed)</i>
+- Support for additional classes
+- Auto-start when API key and link are already set
+- Help ticket reasons
+- Ending breaks
+- Plugin support
+- Leaving, joining, and managing classes
+- Bug fixes
+- Removing Herobrine
+
 ## Screenshots
 ### Themes:
-- Dark Theme:
-    - ![Screenshot 2025-03-04 211901](https://github.com/user-attachments/assets/9ce0e669-126a-4a90-89c9-ba52bbf78768)
+- Dark Theme: 
+    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221559" src="https://github.com/user-attachments/assets/839694a2-1892-4aa4-a740-816bdc19036d" />
 - Red Theme:
-    - ![Screenshot 2025-03-04 211912](https://github.com/user-attachments/assets/34b8718d-554f-4db8-8e13-80d0baa5489e)
-- Blue Theme:
-    - ![image](https://github.com/user-attachments/assets/e6a5b86c-4ff8-4e2f-b98e-de828855520e)
+    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221618" src="https://github.com/user-attachments/assets/3cb44848-7122-46c9-9f2f-d47b7cf6a050" />
+- Blue Theme: 
+    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221627" src="https://github.com/user-attachments/assets/d7275b3b-f850-4cdd-a60a-93a8cbb565b8" />
+- Pink Theme:
+    - <img width="1202" height="732" alt="Screenshot 2025-08-21 221635" src="https://github.com/user-attachments/assets/ed0700a7-925f-4e88-8968-884e64e7337e" />
+    
+---
+
+## Building
+
+Building is as easy as running 2 commands:
+```
+pip install pyinstaller
+pyinstaller '.\Formbar Desktop.spec'
+```
