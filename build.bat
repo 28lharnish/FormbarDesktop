@@ -1,1 +1,0 @@
-pyinstaller .\FormbarDesktop.py -n "Formbar Desktop" -w --icon=icon.ico --add-data="icon.ico;." --contents-directory "formbetadesktop_data"

@@ -3,13 +3,15 @@ from PyQt6.QtGui import qRgb, qRgba, QIcon, QPalette
 from PyQt6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QTableView, QVBoxLayout, QHeaderView, QWidget, QTabWidget, QTableWidgetItem, QStyleFactory)
 from functools import partial
 from themes import Themes
+from custLogging import custLogging
+import time
 import sys, os
 import socketio
 import json
 
 #? Import external layouts
 from models import *
-from managerLayout import ManagerLayout
+from Layouts.managerLayout import ManagerLayout
 
 debug = True
 versionNumber = "1.0.0"
@@ -21,6 +23,8 @@ try:
 except ImportError:
     pass
 
+Logger = custLogging().log
+
 class FormbarApp(QDialog):
     startSocketSignal = pyqtSignal(str, str)
     helpTicketSignal = pyqtSignal()
@@ -28,6 +32,7 @@ class FormbarApp(QDialog):
     allowAllVotingS = pyqtSignal()
     voteSelectedSignal = pyqtSignal(str)
     sendPollSignal = pyqtSignal(tuple)
+    switchAutoAllow = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
@@ -42,6 +47,7 @@ class FormbarApp(QDialog):
         self.voteSelectedSignal.connect(self.worker.voteSelected)
         self.allowAllVotingS.connect(self.worker.allowAllVote)
         self.sendPollSignal.connect(self.worker.sendPoll)
+        self.switchAutoAllow.connect(self.worker.switchAutoAllow)
         self.thread.start()
         
         def getLayout():
@@ -57,13 +63,14 @@ class FormbarApp(QDialog):
         def changeVoting():
             self.allowAllVotingS.emit()
 
-        managerLayout.allowAllVotes.clicked.connect(changeVoting)
+        managerLayout.fastPollAllowAllVotes.clicked.connect(changeVoting)
         managerLayout.settingsConnect.clicked.connect(submitApi)
 
         managerLayout.fastPollTUTD.clicked.connect(partial(self.sendPollSignal.emit, (3, 0, 'Thumbs?', [{'answer': 'Up', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'Wiggle', 'weight': '1.0', 'color': '#00FFFF'},{'answer': 'Down', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False)))
         managerLayout.fastPollTrueFalse.clicked.connect(partial(self.sendPollSignal.emit, (2, 0, 'True or False', [{'answer': 'True', 'weight': '1.0', 'color': '#00FF00'},{'answer': 'False', 'weight': '1.0', 'color': '#FF0000'}], False, 1, [], [], [], [], False)))
         managerLayout.fastPollDoneReady.clicked.connect(partial(self.sendPollSignal.emit, (1, 0, 'Thumbs?', [{'answer': 'Yes', 'weight': '1.0', 'color': '#00FF00'}], False, 1, [], [], [], [], False)))
         managerLayout.fastPollMultiChoi.clicked.connect(partial(self.sendPollSignal.emit, (4, 0, 'Multiple Choice', [{'answer': 'A', 'weight': '1.0', 'color': '#FF0000'},{'answer': 'B', 'weight': '1.0', 'color': '#0000FF'},{'answer': 'C', 'weight': '1.0', 'color': '#FFFF00'},{'answer': 'D', 'weight': '1.0', 'color': '#00FF00'},], False, 1, [], [], [], [], False)))
+        managerLayout.fastPollAutoAllowAll.clicked.connect(self.switchAutoAllow.emit)
 
         layout = QHBoxLayout()
         layout.addWidget(managerLayout.fullPage)
@@ -75,7 +82,7 @@ class FormbarApp(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
-        QApplication.setPalette(themes.lightpalette)
+        QApplication.setPalette(themes.darkpalette)
 
 
         #? Load configsP
@@ -97,12 +104,10 @@ class FormbarApp(QDialog):
             managerLayout.themeDropdown.setCurrentIndex(t)
             match t:
                 case 0:
-                    QApplication.setPalette(themes.lightpalette)
-                case 1:
                     QApplication.setPalette(themes.darkpalette)
-                case 2:
+                case 1:
                     QApplication.setPalette(themes.redPalette)
-                case 3:
+                case 2:
                     QApplication.setPalette(themes.bluePalette)
 
         try:
@@ -119,7 +124,7 @@ class FormbarApp(QDialog):
 
             configJSON.close()
         except:
-            print("No Config JSON, creating one now.")
+            Logger('ConfigJSON', "No Config JSON, creating one now.")
             configJSON = open(os.path.join(os.path.dirname(__file__), 'managerconfig.json'), 'w')
             json.dump({"fdTheme": "0"}, configJSON)
             configJSON.close()
@@ -133,14 +138,10 @@ class FormbarApp(QDialog):
         self.voteOptions = []
         
         def updateData(data):
-            if debug: 
-                print(data)
             self.voteOptions = []
             self.currentData = data
             for option in data["polls"]:
                 self.voteOptions.append(data["polls"][option])
-                if debug: 
-                    print(self.voteOptions)
 
             updatePrompt()
             updateVotes()
@@ -183,14 +184,31 @@ class FormbarApp(QDialog):
             managerLayout.settingsApiLink.deleteLater()
             managerLayout.settingsConnect.deleteLater()
 
+        def createStudents(students, studentsList):
+            managerLayout.studentTabLayout.addStretch()
+            for student in studentsList:
+                newStudentButton = QPushButton(student)
+                managerLayout.studentTabLayout.addWidget(newStudentButton)
+            managerLayout.studentTabLayout.addStretch()
+
+        def resetStudents():
+            while managerLayout.studentTabLayout.count():
+                child = managerLayout.studentTabLayout.takeAt(0)
+                if child.widget():
+                    child.widget().deleteLater()
+
         #? Connect Functions
 
         self.worker.updateData.connect(updateData)
+        self.worker.resetStudents.connect(resetStudents)
+        self.worker.createStudents.connect(createStudents)
         self.worker.disableApi.connect(disableApi)
 
 class WorkerObject(QObject):
     updateData = pyqtSignal(dict)
     disableApi = pyqtSignal()
+    resetStudents = pyqtSignal()
+    createStudents = pyqtSignal(dict, list)
     pyqtSlot()
     def backgroundSocket(self, apikey, apilink):
         self.tempStudents = {}
@@ -198,38 +216,34 @@ class WorkerObject(QObject):
         self.studentsInClass = []
         self.studentsInClassByName = []
         self.lastPoll = {}
-        self.allowAllVotes = False
+        self.autoAllowAll = False
 
         try:
             self.sio = socketio.Client()
             self.joined = False
 
             if debug: 
-                print(apikey)
+                Logger('APIKey', apikey)
             @self.sio.event
             def connect():
                 if debug: 
-                    print("connection established")
+                    Logger("SocketConnect", "Connected.")
                 self.sio.emit('getOwnedClasses', 'landonh')
                 self.sio.emit('getActiveClass')
                 self.sio.emit('cpUpdate')
 
             @self.sio.event
             def setClass(newClassId):
-                print(newClassId)
                 try:
                     if newClassId != None:
-                        if debug: 
-                            print('The user is currently in the class with the id ' + str(newClassId))
+                        Logger("SetClass", 'User in class: ' + str(newClassId))
                         if not self.joined:
                             self.sio.emit('joinClass', newClassId)
                             self.disableApi.emit()
                             self.joined = True
                         self.sio.emit('vbUpdate')
-                    else:
-                        print("No class.")
                 except:
-                    print("No class, or couldn't send update.")
+                    Logger("SetClass", "ERR: No Class / Update Failed to Send")
                 
             @self.sio.event
             def getOwnedClasses(classes):
@@ -239,7 +253,7 @@ class WorkerObject(QObject):
 
             @self.sio.event
             def cpUpdate(classroom):
-                print(classroom)
+                #print(classroom)
                 self.tempStudents = classroom['students']
                 self.tempStudentKeys = list(dict(classroom['students']).keys())
                 self.studentsInClass = []
@@ -247,36 +261,44 @@ class WorkerObject(QObject):
                 for student in range(0, len(self.tempStudentKeys)):
                     if self.tempStudents[self.tempStudentKeys[student]]['API'] != apikey:
                         self.studentsInClass.append(self.tempStudents[self.tempStudentKeys[student]])
-                        self.studentsInClassByName.append(self.tempStudents[self.tempStudentKeys[student]]["username"])
+                        self.studentsInClassByName.append(self.tempStudents[self.tempStudentKeys[student]]["name"])
+                self.resetStudents.emit()
+                self.createStudents.emit(self.tempStudents, self.studentsInClassByName)
 
             @self.sio.event
             def vbUpdate(data):
-                print('data')
+                Logger("VirtualBarUpdate", data)
                 self.updateData.emit(data)
 
             @self.sio.event
             def disconnect():
                 if debug:
-                    print("disconnected from server")
+                    Logger("SocketConnect", "Disconnected")
 
             if not apilink:
                 apilink = 'https://formbeta.yorktechapps.com/'
-            print(apilink)
             self.sio.connect(apilink, { "api": apikey })
         except:
-            print("Couldn't connect.")
+            Logger("SocketConnect", "Couldn't connect.")
         pass
+
+    def switchAutoAllow(self, allow):
+        Logger("AutoAllow", allow)
+        self.autoAllowAll = allow
 
     def allowAllVote(self):
         for student in range(0, len(self.tempStudentKeys)):             
-            self.sio.emit('votingRightChange', (self.tempStudents[self.tempStudentKeys[student]]["username"], True, self.studentsInClassByName))
+            self.sio.emit('votingRightChange', (self.tempStudents[self.tempStudentKeys[student]]["name"], True, self.studentsInClassByName))
 
     def sendPoll(self, customPoll):
         try:
             self.sio.emit('startPoll', customPoll)
             self.sio.emit('cpUpdate')
+            if self.autoAllowAll:
+                time.sleep(0.2) #! Fixes issue allowing at the same time as creating poll
+                self.allowAllVote()
         except:
-            print("No socket yet.")
+            Logger("SendPoll", "ERR: No socket yet.")
 
     def voteSelected(self, voteName):
         try:

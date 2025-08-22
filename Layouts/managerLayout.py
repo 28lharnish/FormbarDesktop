@@ -8,23 +8,27 @@ class ManagerLayout:
     def __init__(self):
         self.activeForm()
         self.fastPoll()
+        self.studentsTab()
 
 
         self.activeFormW = QWidget()
         self.activeFormW.setLayout(self.votingShownLayout)
 
 
-
-        self.fastPollW = QWidget()
+        self.fastPollW = QGroupBox("Fast Poll")
         self.fastPollW.setLayout(self.fastPollLayout)
 
-        self.customPollW = QWidget()
+        self.customPollW = QGroupBox("Custom Form")
         self.customPollW.setLayout(QVBoxLayout())
+
+        self.studentsTabW = QGroupBox("Students")
+        self.studentsTabW.setLayout(self.studentTabLayout)
         
         self.tabs = QTabWidget()
         self.tabs.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.tabs.addTab(self.fastPollW, "Fast Poll")
-        #self.tabs.addTab(self.customPollW, "Custom Form")
+        self.tabs.addTab(self.customPollW, "Custom Form")
+        self.tabs.addTab(self.studentsTabW, "Students")
         self.tabs.setDocumentMode(True)
         
         self.fullPage = QWidget()
@@ -34,12 +38,22 @@ class ManagerLayout:
 
 
     def fastPoll(self):
-        self.fastPollBox = QGroupBox("Fast Poll")
+        self.fastPollBox = QGroupBox("Fast Poll Options")
         self.fastPollBox.setMinimumHeight(60)
         self.fastPollTUTD = QPushButton("TUTD")
         self.fastPollTrueFalse = QPushButton("True / False")
         self.fastPollDoneReady = QPushButton("Done / Ready")
         self.fastPollMultiChoi = QPushButton("Multiple Choice")
+  
+        self.fastPollAutoAllowVotes = QWidget()
+        self.fastPollAutoAllowVotesLayout = QHBoxLayout()
+        self.fastPollAutoAllowVotesLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.fastPollAutoAllowVotes.setLayout(self.fastPollAutoAllowVotesLayout)
+        self.fastPollAutoAllowAllLabel = QLabel("Automatically allow all votes:")
+        self.fastPollAutoAllowAll = QCheckBox()
+        self.fastPollAutoAllowVotesLayout.addWidget(self.fastPollAutoAllowAllLabel)
+        self.fastPollAutoAllowVotesLayout.addWidget(self.fastPollAutoAllowAll)
+        self.fastPollAutoAllowAll.setChecked(False)
         
         self.fastPollTUTD.setFixedHeight(40)
         self.fastPollTrueFalse.setFixedHeight(40)
@@ -50,6 +64,7 @@ class ManagerLayout:
         self.fastPollTrueFalse.setCursor(Qt.CursorShape.PointingHandCursor)
         self.fastPollDoneReady.setCursor(Qt.CursorShape.PointingHandCursor)
         self.fastPollMultiChoi.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.fastPollAutoAllowAll.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.fastPollBoxLayout = QHBoxLayout()
         self.fastPollBoxLayout.addWidget(self.fastPollTUTD)
@@ -58,17 +73,24 @@ class ManagerLayout:
         self.fastPollBoxLayout.addWidget(self.fastPollMultiChoi)
         self.fastPollBox.setLayout(self.fastPollBoxLayout)
 
-
-        self.allowAllVotes = QPushButton("Allow All Votes")
-        self.allowAllVotes.setFixedHeight(40)
-        self.allowAllVotes.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.fastPollAllowVotes = QGroupBox("Voting Permissions")
+        self.fastPollAllowVotesLayout = QVBoxLayout()
+        self.fastPollAllowVotes.setLayout(self.fastPollAllowVotesLayout)
+        self.fastPollAllowAllVotes = QPushButton("Allow All Votes")
+        self.fastPollAllowAllVotes.setFixedHeight(40)
+        self.fastPollAllowAllVotes.setCursor(Qt.CursorShape.PointingHandCursor)
         
+        self.fastPollAllowVotesLayout.addWidget(self.fastPollAllowAllVotes)
+        self.fastPollAllowVotesLayout.addWidget(self.fastPollAutoAllowVotes)
+
         self.fastPollLayout = QVBoxLayout()
         self.fastPollLayout.addStretch()
         self.fastPollLayout.addWidget(self.fastPollBox)
-        self.fastPollLayout.addWidget(self.allowAllVotes)
+        self.fastPollLayout.addWidget(self.fastPollAllowVotes)
         self.fastPollLayout.addStretch()
 
+    def studentsTab(self):
+        self.studentTabLayout = QVBoxLayout()
         
     def activeForm(self):
         self.promptText = QLineEdit("Please input your API Key, then click Connect.")
@@ -113,7 +135,7 @@ class ManagerLayout:
 
         self.themeDropdownLabel = QLabel("Theme:")
         self.themeDropdown = QComboBox()
-        self.themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
+        self.themeDropdown.addItems(["Dark", "Red", "Blue"])
         self.themeDropdown.setFixedHeight(40)
         self.themeDropdown.setCursor(Qt.CursorShape.PointingHandCursor)
 

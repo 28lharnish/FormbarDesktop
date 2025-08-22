@@ -2,15 +2,10 @@
 
 
 a = Analysis(
-    ['FormbarDesktop.py'],
+    ['FormbarDesktop-Manager.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('./Images/icon.ico', 'Images'),
-        ('./Images/arrow-up.png', 'Images'),
-        ('./Images/arrow-down.png', 'Images'),
-        ('./style.qss', '.')
-    ],
+    datas=[('./Images/icon.ico', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -26,7 +21,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='Formbar Desktop',
+    name='Formbar Desktop Manager',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -37,8 +32,8 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['Images\\icon.ico'],
-    contents_directory='formbetadesktop_data',
+    icon=['./Images/icon.ico'],
+    contents_directory='formbetadesktopman_data',
 )
 coll = COLLECT(
     exe,
@@ -47,5 +42,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='Formbar Desktop',
+    name='Formbar Desktop Manager',
 )

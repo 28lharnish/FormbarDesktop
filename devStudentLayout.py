@@ -93,14 +93,14 @@ class StudentLayout:
 
         self.themeDropdownLabel = QLabel("Theme:")
         self.themeDropdown = QComboBox()
-        self.themeDropdown.addItems(["Light", "Dark", "Red", "Blue"])
+        self.themeDropdown.addItems(["Dark", "Red", "Blue", "Pink"])
         self.themeDropdown.setFixedHeight(40)
         self.themeDropdown.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        #self.stayOnTopCheckLabel = QLabel("Keep window on top?")
-        #self.stayOnTopCheck = QCheckBox()
+        self.stayOnTopCheckLabel = QLabel("Keep window on top?")
+        self.stayOnTopCheck = QCheckBox()
 
-        self.settingsApiKeyLabel = QLabel("Your Api Key:")
+        self.settingsApiKeyLabel = QLabel("Your API Key:")
         self.settingsApiKey = QLineEdit("")
         self.settingsApiKey.setFixedHeight(40)
         self.settingsApiKey.setEchoMode(QLineEdit.EchoMode.Password)
@@ -114,8 +114,8 @@ class StudentLayout:
         self.settingsConnect.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.settingslayout = QVBoxLayout()
-        #self.settingslayout.addWidget(self.stayOnTopCheckLabel)
-        #self.settingslayout.addWidget(self.stayOnTopCheck)
+        self.settingslayout.addWidget(self.stayOnTopCheckLabel)
+        self.settingslayout.addWidget(self.stayOnTopCheck)
         self.settingslayout.addWidget(self.themeDropdownLabel)
         self.settingslayout.addWidget(self.themeDropdown)
         self.settingslayout.addWidget(self.settingsApiKeyLabel)
