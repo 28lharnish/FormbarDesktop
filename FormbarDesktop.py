@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt, QThread, QObject, pyqtSlot, pyqtSignal, QFile, QCoreApplication, QProcess
 from PyQt6.QtGui import qRgb, QIcon, QDesktopServices, QPen, QColor
 from PyQt6.QtWidgets import QStyleFactory, QApplication, QStyle, QDialog, QRadioButton, QPushButton, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtCharts import QBarSet, QChart
 from functools import partial
 import sys, os
 import socketio
@@ -58,7 +59,6 @@ class FormbarApp(QMainWindow):
     def __init__(self, parent=None):
         super(FormbarApp, self).__init__(parent)
 
-        #themes = Themes()
         self.worker = WorkerObject()
         self.thread = QThread()
         self.worker.moveToThread(self.thread)
@@ -90,7 +90,37 @@ class FormbarApp(QMainWindow):
                 self.show()
                 self.activateWindow()
                 return
+            
+        def showGraphLegends(checked):
+            setConfig([("fdShowLegend", checked)])
+            print(checked)
+            if checked == True:
+                studentLayout.graphViewBarChart.legend().show()
+                studentLayout.graphViewDonutChart.legend().show()
+                studentLayout.graphViewPieChart.legend().show()
+                return
+            else:
+                studentLayout.graphViewBarChart.legend().hide()
+                studentLayout.graphViewDonutChart.legend().hide()
+                studentLayout.graphViewPieChart.legend().hide()
+                return
 
+        def doGraphAnims(checked):
+            setConfig([("fdDoGraphAnims", checked)])
+            if checked == True:
+                studentLayout.graphViewBarChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
+                studentLayout.graphViewDonutChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
+                studentLayout.graphViewPieChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
+                return
+            else:
+                try:
+                    #studentLayout.graphViewBarChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
+                    studentLayout.graphViewDonutChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
+                    #studentLayout.graphViewPieChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
+                except Exception as e:
+                    print(e)
+                return
+            
         def setCurrentVoteNone():
             studentLayout.currentVoteShow.setStyleSheet("")
             studentLayout.currentVoteShow.setText("None")
@@ -101,6 +131,8 @@ class FormbarApp(QMainWindow):
         studentLayout.removeVoteButton.clicked.connect(partial(self.voteSelectedSignal.emit, 'remove'))
         studentLayout.removeVoteButton.clicked.connect(setCurrentVoteNone)
         studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
+        studentLayout.graphLegendCheckboxCB.clicked.connect(showGraphLegends)
+        studentLayout.graphAnimationCheckboxCB.clicked.connect(doGraphAnims)
         studentLayout.settingsRemoveAll.clicked.connect(self.deleteConfig)
 
         wid = QWidget(self)
@@ -119,23 +151,6 @@ class FormbarApp(QMainWindow):
 
         self.UpdateAvailable = QDialog(self)
         self.UpdateAvailable.setParent(self)
-        # self.UpdateAvailable.setStyleSheet("""
-        #                                     QDialog { 
-        #                                         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);
-        #                                     }
-                                           
-        #                                     QLabel {
-        #                                         color: #09172e
-        #                                    }
-
-        #                                    QPushButton {
-        #                                         background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #577fbf, stop: 1 #365c99);
-        #                                         border: 2px solid #55000000;
-        #                                         margin: 10px;
-        #                                         border-radius: 10px;
-        #                                         color: #dddddd;
-        #                                    }
-        #                                    """)
         self.UpdateAvailable.setFixedSize(600, 400)
         self.UpdateAvailable.setWindowTitle("Update Available")
 
@@ -207,6 +222,35 @@ class FormbarApp(QMainWindow):
                     QMainWindow.setObjectName(self, "pinkTheme")
             self.ReloadStyles()
 
+        def setGraphView(view):
+            setConfig([("fdGraphView", view)])
+            studentLayout.graphViewDropdown.setCurrentIndex(view)
+            match view:
+                case 0: # Bar Graph
+                    studentLayout.graphViewBarChartView.setHidden(False)
+                    studentLayout.graphViewDonutChartView.setHidden(True)
+                    studentLayout.voteViewTable.setHidden(True)
+                    studentLayout.graphViewPieChartView.setHidden(True)
+                    return
+                case 1: # Donut Graph
+                    studentLayout.graphViewBarChartView.setHidden(True)
+                    studentLayout.graphViewDonutChartView.setHidden(False)
+                    studentLayout.voteViewTable.setHidden(True)
+                    studentLayout.graphViewPieChartView.setHidden(True)
+                    return
+                case 2: # Table Graph
+                    studentLayout.graphViewBarChartView.setHidden(True)
+                    studentLayout.graphViewDonutChartView.setHidden(True)
+                    studentLayout.voteViewTable.setHidden(False)
+                    studentLayout.graphViewPieChartView.setHidden(True)
+                    return
+                case 3: # Pie Graph
+                    studentLayout.graphViewBarChartView.setHidden(True)
+                    studentLayout.graphViewDonutChartView.setHidden(True)
+                    studentLayout.voteViewTable.setHidden(True)
+                    studentLayout.graphViewPieChartView.setHidden(False)
+                    return
+
         try:
             configJSON = open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r')
             configData = json.load(configJSON)
@@ -226,6 +270,25 @@ class FormbarApp(QMainWindow):
                 stayOnTop(configData["fdStayOnTop"])
                 studentLayout.stayOnTopCheck.setChecked(configData["fdStayOnTop"])
 
+            if "fdGraphView" in configData:
+                setGraphView(configData["fdGraphView"])
+            else:
+                setGraphView(2)
+
+            if "fdShowLegend" in configData:
+                showGraphLegends(configData["fdShowLegend"])
+                studentLayout.graphLegendCheckboxCB.setChecked(configData["fdShowLegend"])
+            else:
+                showGraphLegends(False)
+                studentLayout.graphLegendCheckboxCB.setChecked(False)
+                
+            if "fdDoGraphAnims" in configData:
+                doGraphAnims(configData["fdDoGraphAnims"])
+                studentLayout.graphAnimationCheckboxCB.setChecked(configData["fdDoGraphAnims"])
+            else:
+                doGraphAnims(False)
+                studentLayout.graphAnimationCheckboxCB.setChecked(False)
+
             configJSON.close()
         except:
             Logger('ConfigJSON', "No Config JSON, creating one now.")
@@ -235,6 +298,7 @@ class FormbarApp(QMainWindow):
 
 
         studentLayout.themeDropdown.currentIndexChanged.connect(setTheme)
+        studentLayout.graphViewDropdown.currentIndexChanged.connect(setGraphView)
 
 
         self.currentData = {}
@@ -325,22 +389,38 @@ class FormbarApp(QMainWindow):
 
         def updateVotes():
             voteRows = createRows(self.currentData)
-            studentLayout.voteView.setModel(None) 
+            studentLayout.voteViewTable.setModel(None) 
             model = TableModel(None, ["Votes", "Responses", "Color"], voteRows)
-            studentLayout.voteView.setModel(model)
-            studentLayout.series.clear()
+            studentLayout.voteViewTable.setModel(model)
+            studentLayout.graphViewBarChartSeries.clear()
+            studentLayout.graphViewDonutChartSeries.clear()
+            studentLayout.graphViewPieChartSeries.clear()
             print(voteRows)
-            for row in voteRows:
-                slice = studentLayout.series.append('Jane', row[1])
-                if row[2] == "None":  
-                    slice.setBrush(QColor("#e1e1e1"))
-                    slice.setBorderWidth(0)
-                    slice.setBorderColor(QColor("transparent"))
-                else:
-                    slice.setBrush(QColor(row[2]))
-                    slice.setBorderWidth(0)
-                    slice.setBorderColor(QColor("transparent"))
             
+            for row in voteRows:
+                barSet = QBarSet(row[0])
+                barSet.append(row[1])
+                studentLayout.graphViewBarChartSeries.append(barSet)
+                sliceDonut = studentLayout.graphViewDonutChartSeries.append(row[0], row[1])
+                slicePie = studentLayout.graphViewPieChartSeries.append(row[0], row[1])
+                if row[2] == "None":  
+                    barSet.setColor(QColor("#e1e1e1"))
+                    sliceDonut.setBrush(QColor("#e1e1e1"))
+                    slicePie.setBrush(QColor("#e1e1e1"))
+                    sliceDonut.setBorderWidth(0)
+                    slicePie.setBorderWidth(0)
+                    barSet.setBorderColor(QColor("transparent"))
+                    sliceDonut.setBorderColor(QColor("transparent"))
+                    slicePie.setBorderColor(QColor("transparent"))
+                else:
+                    barSet.setColor(QColor(row[2]))
+                    sliceDonut.setBrush(QColor(row[2]))
+                    slicePie.setBrush(QColor(row[2]))
+                    sliceDonut.setBorderWidth(0)
+                    slicePie.setBorderWidth(0)
+                    barSet.setBorderColor(QColor("transparent"))
+                    sliceDonut.setBorderColor(QColor("transparent"))
+                    slicePie.setBorderColor(QColor("transparent"))
         
         def disableApi():
             setConfig([("apiKey", str(studentLayout.settingsApiKey.text())), ("apiLink", str(studentLayout.settingsApiLink.text()))])
