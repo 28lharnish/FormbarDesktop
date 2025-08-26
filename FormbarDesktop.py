@@ -105,21 +105,21 @@ class FormbarApp(QMainWindow):
                 studentLayout.graphViewPieChart.legend().hide()
                 return
 
-        def doGraphAnims(checked):
-            setConfig([("fdDoGraphAnims", checked)])
-            if checked == True:
-                studentLayout.graphViewBarChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
-                studentLayout.graphViewDonutChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
-                studentLayout.graphViewPieChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
-                return
-            else:
-                try:
-                    #studentLayout.graphViewBarChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
-                    studentLayout.graphViewDonutChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
-                    #studentLayout.graphViewPieChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
-                except Exception as e:
-                    print(e)
-                return
+        # def doGraphAnims(checked):
+        #     setConfig([("fdDoGraphAnims", checked)])
+        #     if checked == True:
+        #         studentLayout.graphViewBarChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
+        #         studentLayout.graphViewDonutChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
+        #         studentLayout.graphViewPieChart.setAnimationOptions(QChart.AnimationOption.AllAnimations)
+        #         return
+        #     else:
+        #         try:
+        #             #studentLayout.graphViewBarChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
+        #             #studentLayout.graphViewDonutChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
+        #             #studentLayout.graphViewPieChart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
+        #         except Exception as e:
+        #             print(e)
+        #         return
             
         def setCurrentVoteNone():
             studentLayout.currentVoteShow.setStyleSheet("")
@@ -132,7 +132,7 @@ class FormbarApp(QMainWindow):
         studentLayout.removeVoteButton.clicked.connect(setCurrentVoteNone)
         studentLayout.stayOnTopCheck.clicked.connect(stayOnTop)
         studentLayout.graphLegendCheckboxCB.clicked.connect(showGraphLegends)
-        studentLayout.graphAnimationCheckboxCB.clicked.connect(doGraphAnims)
+        #studentLayout.graphAnimationCheckboxCB.clicked.connect(doGraphAnims)
         studentLayout.settingsRemoveAll.clicked.connect(self.deleteConfig)
 
         wid = QWidget(self)
