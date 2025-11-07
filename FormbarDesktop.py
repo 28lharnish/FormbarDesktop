@@ -16,7 +16,7 @@ from models import *
 from Layouts.studentLayout import StudentLayout
 
 debug = True
-versionNumber = "1.0.6-dev"
+versionNumber = "1.1-dev"
 
 try:
     from ctypes import windll
@@ -309,16 +309,16 @@ class FormbarApp(QMainWindow):
         def updateData(data):
             self.voteOptions = []
             self.currentData = data
-            for option in data["polls"]:
-                self.voteOptions.append(data["polls"][option])
+            for option in data["poll"]["responses"]:
+                self.voteOptions.append(option)
             updatePrompt()
             updateVoteOptions()
             updateVotes()
 
 
         def updatePrompt():
-            studentLayout.promptText.setText(self.currentData["prompt"])
-            if self.currentData["status"] == False:
+            studentLayout.promptText.setText(self.currentData["poll"]["prompt"])
+            if self.currentData["poll"]["status"] == False:
                 studentLayout.promptText.setText("No current poll.")
 
         def updateVoteOptions():
@@ -376,12 +376,12 @@ class FormbarApp(QMainWindow):
             allResponses = 0
 
             for option in self.voteOptions:
-                allResponses += option["responses"]
-                newRow = (option["answer"], option["responses"], option["color"])
+                allResponses += self.currentData["poll"]["responseCounts"][option["answer"]]["responses"]
+                newRow = (option["answer"], self.currentData["poll"]["responseCounts"][option["answer"]]["responses"], option["color"])
                 newRows.append(newRow)
             
 
-            noResRow = ("No Response", self.currentData["totalResponders"] - allResponses, "None")
+            noResRow = ("No Response", self.currentData["poll"]["totalResponders"] - allResponses, "None")
             newRows.append(noResRow)
 
             return newRows
@@ -461,20 +461,15 @@ class WorkerObject(QObject):
                             self.sio.emit('joinClass', newClassId)
                             self.disableApi.emit()
                             self.joined = True
-                        self.sio.emit('vbUpdate')
+                        self.sio.emit('classUpdate')
                     else:
                         print("No class.")
                 except:
                     Logger("SetClass", "ERR: No Class / Update Failed to Send")
 
             @self.sio.event
-            def customPollUpdate(data):
-                Logger("customPollUpdate")
-                #self.updateData.emit(data)
-
-            @self.sio.event
-            def vbUpdate(data):
-                Logger("VirtualBarUpdate", data)
+            def classUpdate(data):
+                Logger("classUpdate", data)
                 self.updateData.emit(data)
 
             @self.sio.event
